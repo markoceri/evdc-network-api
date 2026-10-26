@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+
+# Secrets
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Distribution
+*.tar.gz
+*.whl
+
+# Certs and keys
+*.pem
+*.key
+
+# Ingore folders
+logs/
+ignore/
+
+
+# Agent instructions (local only)
+CLAUDE.md
