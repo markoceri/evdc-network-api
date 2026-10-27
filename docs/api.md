@@ -152,6 +152,8 @@ with the new token. If there is no refresh token or the refresh fails, the app l
 | PUT | `/api/profile` | Update the profile (merge); also enrols a biometric key via `{ "biometricKey" }`, **verified** |
 | POST | `/api/biometric-login` | Device-key login, no password/2FA, **verified** |
 | POST | `/api/remove-biometricKey` | Revoke a biometric key, **verified** |
+| GET | `/api/favourite/stations` | The account's favourite stations (`{ "result": { "data": [ … ] } }`), **verified** |
+| GET | `/api/notification/?page=&limit=&success=` | Notifications (`result.data.data[]`), **verified** |
 | GET | `/api/user-sessions` | List the account's logged-in sessions / devices (`{ "data": [ … ] }`), **verified** |
 | DELETE | `/api/user-sessions/{id}` | Revoke one session by its `_id`, **verified** |
 | DELETE | `/api/user-sessions` | Revoke all sessions (current one included), **verified** |
@@ -215,6 +217,18 @@ The account's balances and the movements that paid for charging, in EUR and in t
 
 The client exposes `get_wallets()`, `get_wallet_transactions()` and `iter_wallet_transactions()`. Top-ups, transfers
 and setting the primary wallet are write operations and are out of scope.
+
+## Favourite stations and notifications (read-only) — **verified**
+
+- **Favourites** — `GET /api/favourite/stations` → `{ "result": { "data": [ { "EvseID", "status", "isFavourite",
+  "station_data": { …EvseData… } } ] } }`. Each item wraps the EVSE under `station_data`; the client maps it to an
+  `Evse` (with live `status` and prices) via `get_favourite_stations()`.
+- **Notifications** — `GET /api/notification/?page=&limit=&success=` → `{ "result": { "data": { "data":
+  [ Notification ], "total", "currentPage", "totalPages" } } }`. `success` is **required** and must be a lowercase
+  boolean string (`"true"` / `"false"`; Python's `"True"` is rejected). Each notification: `_id`, `type`, `title`,
+  `body`, `read`, `success`, `createdAt`. The client exposes `get_notifications()` and `iter_notifications()`.
+- **Unread count**: `/api/notification/unread-count` is referenced by the app but **returns HTTP 404** on the
+  backend (no such route), so `count_unread_notifications()` pages the list and counts `read == false` instead.
 
 ## Real-time session progress (socket.io)
 

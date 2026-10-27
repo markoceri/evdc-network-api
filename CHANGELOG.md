@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   including the `EVDC Token` wallet) and `get_wallet_transactions()` / `iter_wallet_transactions()` →
   `WalletHistoryPage` of `WalletTransaction` (signed amount, running balances, and `session_id` linking a payment to
   its charging session). Top-ups and transfers are out of scope.
+- `get_favourite_stations()` → `list[Evse]` (the account's favourite stations, with live status and prices) and
+  `get_notifications()` / `iter_notifications()` → `NotificationPage` of `Notification`, verified on a real account.
+  `count_unread_notifications()` counts unread ones by paging the list, as the backend has no unread-count endpoint.
 - Connected sessions / devices, on both clients: `get_connected_sessions()` → `list[ConnectedSession]`,
   `revoke_session(id)` and `revoke_all_sessions()` (`GET` / `DELETE /api/user-sessions`), verified against the real
   backend. A session is created per `x-device-id`, so pass a stable `device_id` to stay a single device.
