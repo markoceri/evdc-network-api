@@ -122,6 +122,10 @@ except EvdcTwoFactorRequiredError as exc:
 # the client is authenticated from here on
 ```
 
+`exc.method` is `"email"` (a code e-mailed on login) or `"totp"` (an authenticator app); `verify_two_factor()`
+handles both. For an authenticator account you can use a recovery code instead with `verify_recovery_code(code)`.
+The verification endpoints and payloads are in [`docs/api.md`](docs/api.md).
+
 The account's logged-in sessions (devices) can be listed and revoked. A session is created per device id, so pass a
 **stable** `device_id` (a 64-hex string kept across runs) to stay one device instead of registering a new one each
 login. The session shows up under `device_model` (default `evdc-network-api`); set `device_model` to tell clients
