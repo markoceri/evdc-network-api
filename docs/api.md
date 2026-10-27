@@ -74,7 +74,29 @@ Response (shape inferred from the client):
 }
 ```
 
-Accounts with TOTP 2FA go through `/api/2fa/totp/login` (not analysed yet).
+### Two-factor verification
+
+When the login response reports `isTwoFactorEnabled: true` (with `twoFactorMethod` either `email` or `totp`), the
+login is completed with a verification code before the session is used. The method drives which endpoint is called:
+
+| Method | Endpoint | Body |
+|---|---|---|
+| `email` | `POST /api/verifyOTP` | `{ "email", "otp", "isTwoFactorEnabled": true }` |
+| `email` (resend) | `POST /api/resendVerificationCode` | `{ "email", "isForgotPassword": false }` |
+| `totp` | `POST /api/2fa/totp/login` | `{ "email", "totpCode" }` |
+| `totp` (recovery) | `POST /api/2fa/totp/recovery-login` | `{ "email", "recoveryCode" }` |
+
+`verifyOTP` is **verified** on a real account: a correct code returns HTTP 200 with the user and fresh session
+tokens nested under `user`, a wrong code returns HTTP 400.
+
+```json
+{ "user": { "...user fields...", "accessToken": "…", "refreshToken": "…", "token": "…" },
+  "message": "Verification code verified successfully." }
+```
+
+The TOTP endpoints are reconstructed from the app; their response is expected under `data` (not yet confirmed). The
+client exposes `verify_two_factor()`, `verify_recovery_code()` and `resend_two_factor_code()`, and reads the tokens
+from `user` or `data`.
 
 ### Token refresh — `POST /api/refresh-token`
 

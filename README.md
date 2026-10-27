@@ -55,8 +55,10 @@ repository, under [`docs/`](docs/). See the [legal notice](LEGAL.md) for the Eur
 backend. The session, receipt, station and live-progress models are reconstructed from the app and still need to be
 confirmed on real charging data; their original payload is always kept in `raw`.
 
-Only email/password accounts **without two-factor authentication** are supported. Accounts created with Google or
-Apple sign-in have no EVDC password and cannot log in through the API.
+Email/password accounts are supported, including those with two-factor authentication (an e-mail code or an
+authenticator app): `login()` raises `EvdcTwoFactorRequiredError` and the login is completed with a verification
+code (see below). Accounts created with Google or Apple sign-in have no EVDC password and cannot log in through the
+API.
 
 ## Installation
 
@@ -105,6 +107,20 @@ for evse in client.find_stations_near(45.4642, 9.1900, radius_m=1000):
 
 Each result is one connector (EVSE). All the connectors within the radius are returned; pass `max_results` to
 stop earlier. Search one position at a time with a local radius: sweeping an area is out of the project's scope.
+
+If the account has two-factor authentication, complete the login with the code it asks for:
+
+```python
+from evdc_network_api import EvdcApiClient, EvdcTwoFactorRequiredError
+
+client = EvdcApiClient(email="you@example.com", password="...")
+try:
+    client.login()
+except EvdcTwoFactorRequiredError as exc:
+    code = input(f"Enter the {exc.method} verification code: ")  # e-mail code or authenticator code
+    client.verify_two_factor(code)
+# the client is authenticated from here on
+```
 
 The client logs in on the first call and refreshes the access token by itself. To avoid a new login at every start,
 persist the tokens and the device id:

@@ -24,7 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `get_evse(evse_id)` → `Evse`, all reconstructed from the app.
 - `EvdcLiveClient` (`live` extra, `python-socketio`): live `chargingSessionProgress` updates as `SessionProgress`,
   with token refresh on socket authentication errors. Not yet tested on a real session.
-- `EvdcTwoFactorRequiredError` for accounts with two-factor authentication, which is not supported yet.
+- Two-factor login. When an account has 2FA enabled, `login()` raises `EvdcTwoFactorRequiredError` (carrying the
+  `method`, `email` or `totp`) without activating the session, and the login is completed with `verify_two_factor()`,
+  `verify_recovery_code()` or `resend_two_factor_code()`. The session is activated only after the code is verified.
+  The `email` verification response shapes are not yet confirmed on a real account.
 - API documentation in `docs/api.md`.
 - Nearby charging points, on both clients. `get_nearby_stations(latitude, longitude, page, page_size)` returns one
   page from `/api/hubject/nearby/{longitude}/{latitude}` (longitude first, verified), nearest first.
