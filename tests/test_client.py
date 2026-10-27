@@ -17,6 +17,10 @@ REFRESH = "api/refresh-token"
 PROFILE = "api/profile"
 HISTORY = "api/hubject/charge-history"
 ONGOING = "api/hubject/ongoing-sessionsV2"
+VERIFY_OTP = "api/verifyOTP"
+RESEND_CODE = "api/resendVerificationCode"
+TOTP_LOGIN = "api/2fa/totp/login"
+TOTP_RECOVERY = "api/2fa/totp/recovery-login"
 
 
 def _client(session: FakeSession, **kwargs: object) -> EvdcApiClient:
@@ -86,10 +90,126 @@ def test_login_error_raises_auth_error_with_server_message(fake_session: FakeSes
     assert excinfo.value.status_code == 400
 
 
-def test_login_without_token_and_2fa_raises_two_factor_error(fake_session: FakeSession) -> None:
-    fake_session.add("POST", LOGIN, _ok({"data": {"isTwoFactorEnabled": True, "twoFactorMethod": "email"}}))
+def test_login_with_2fa_raises_and_does_not_activate_session(fake_session: FakeSession) -> None:
+    # The backend returns usable tokens even with 2FA on; the client must not use them before verification.
+    fake_session.add(
+        "POST",
+        LOGIN,
+        _ok({"data": {"isTwoFactorEnabled": True, "twoFactorMethod": "email", "accessToken": "pre-2fa-token"}}),
+    )
+    client = _client(fake_session)
+
+    with pytest.raises(EvdcTwoFactorRequiredError) as excinfo:
+        client.login()
+
+    assert excinfo.value.method == "email"
+    assert client.access_token is None
+    assert client.logged_in is False
+    assert client.two_factor_pending == "email"
+
+
+def test_verify_two_factor_email_uses_response_tokens(fake_session: FakeSession) -> None:
+    # verifyOTP returns the user and fresh tokens nested under "user" (verified shape).
+    fake_session.add(
+        "POST",
+        LOGIN,
+        _ok({"data": {"isTwoFactorEnabled": True, "twoFactorMethod": "email", "accessToken": "held-token"}}),
+    )
+    fake_session.add(
+        "POST",
+        VERIFY_OTP,
+        _ok({"user": load_fixture("login")["data"], "message": "Verification code verified successfully."}),
+    )
+    client = _client(fake_session)
     with pytest.raises(EvdcTwoFactorRequiredError):
-        _client(fake_session).login()
+        client.login()
+
+    user = client.verify_two_factor("2194")
+
+    assert client.access_token == "test-access-token"
+    assert client.refresh_token == "test-refresh-token"
+    assert client.two_factor_pending is None
+    assert user.email == "mario.rossi@example.com"
+    assert fake_session.paths() == [LOGIN, VERIFY_OTP]  # no extra profile request
+    otp_body = fake_session.calls[1].json
+    assert otp_body == {"email": "mario.rossi@example.com", "otp": "2194", "isTwoFactorEnabled": True}
+
+
+def test_verify_two_factor_email_falls_back_to_held_token(fake_session: FakeSession) -> None:
+    # Defensive: if a verification response carries no tokens, use the ones held from the login step.
+    fake_session.add(
+        "POST",
+        LOGIN,
+        _ok(
+            {
+                "data": {
+                    "isTwoFactorEnabled": True,
+                    "twoFactorMethod": "email",
+                    "accessToken": "held-token",
+                    "refreshToken": "held-refresh",
+                }
+            }
+        ),
+    )
+    fake_session.add("POST", VERIFY_OTP, _ok({"message": "verified"}))
+    fake_session.add("GET", PROFILE, _ok(load_fixture("profile")))
+    client = _client(fake_session)
+    with pytest.raises(EvdcTwoFactorRequiredError):
+        client.login()
+
+    user = client.verify_two_factor("2194")
+
+    assert client.access_token == "held-token"
+    assert client.refresh_token == "held-refresh"
+    assert user.email == "mario.rossi@example.com"
+
+
+def test_verify_two_factor_totp_uses_response_tokens(fake_session: FakeSession) -> None:
+    fake_session.add("POST", LOGIN, _ok({"data": {"isTwoFactorEnabled": True, "twoFactorMethod": "totp"}}))
+    fake_session.add("POST", TOTP_LOGIN, _ok(load_fixture("login")))
+    client = _client(fake_session)
+    with pytest.raises(EvdcTwoFactorRequiredError):
+        client.login()
+
+    user = client.verify_two_factor("000111")
+
+    assert client.access_token == "test-access-token"
+    assert client.two_factor_pending is None
+    assert user.email == "mario.rossi@example.com"
+    assert fake_session.calls[1].path == TOTP_LOGIN
+    assert fake_session.calls[1].json == {"email": "mario.rossi@example.com", "totpCode": "000111"}
+
+
+def test_verify_recovery_code(fake_session: FakeSession) -> None:
+    fake_session.add("POST", LOGIN, _ok({"data": {"isTwoFactorEnabled": True, "twoFactorMethod": "totp"}}))
+    fake_session.add("POST", TOTP_RECOVERY, _ok(load_fixture("login")))
+    client = _client(fake_session)
+    with pytest.raises(EvdcTwoFactorRequiredError):
+        client.login()
+
+    client.verify_recovery_code("abcd-efgh")
+
+    assert client.access_token == "test-access-token"
+    assert fake_session.calls[1].path == TOTP_RECOVERY
+    assert fake_session.calls[1].json == {"email": "mario.rossi@example.com", "recoveryCode": "abcd-efgh"}
+
+
+def test_resend_two_factor_code(fake_session: FakeSession) -> None:
+    fake_session.add("POST", LOGIN, _ok({"data": {"isTwoFactorEnabled": True, "twoFactorMethod": "email"}}))
+    fake_session.add("POST", RESEND_CODE, _ok({"message": "sent"}))
+    client = _client(fake_session)
+    with pytest.raises(EvdcTwoFactorRequiredError):
+        client.login()
+
+    client.resend_two_factor_code()
+
+    assert fake_session.calls[1].path == RESEND_CODE
+    assert fake_session.calls[1].json == {"email": "mario.rossi@example.com", "isForgotPassword": False}
+
+
+def test_verify_two_factor_without_pending_raises(fake_session: FakeSession) -> None:
+    with pytest.raises(EvdcAuthError, match="pending"):
+        _client(fake_session).verify_two_factor("123456")
 
 
 def test_login_needs_password(fake_session: FakeSession) -> None:
