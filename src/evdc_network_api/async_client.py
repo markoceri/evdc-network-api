@@ -13,7 +13,7 @@ from .const import DEFAULT_NEARBY_RADIUS_M, DEFAULT_PAGE_SIZE, NEARBY_PAGE_SIZE
 
 if TYPE_CHECKING:
     from .client import EvdcApiClient
-    from .models import ChargingHistoryPage, ChargingSession, Evse, OngoingSession, Receipt, User
+    from .models import ChargingHistoryPage, ChargingSession, ConnectedSession, Evse, OngoingSession, Receipt, User
 
 
 class AsyncEvdcApiClient:
@@ -73,6 +73,15 @@ class AsyncEvdcApiClient:
 
     async def get_evse(self, evse_id: str) -> Evse:
         return await asyncio.to_thread(self._client.get_evse, evse_id)
+
+    async def get_connected_sessions(self) -> list[ConnectedSession]:
+        return await asyncio.to_thread(self._client.get_connected_sessions)
+
+    async def revoke_session(self, session_id: str) -> None:
+        await asyncio.to_thread(self._client.revoke_session, session_id)
+
+    async def revoke_all_sessions(self) -> None:
+        await asyncio.to_thread(self._client.revoke_all_sessions)
 
     async def get_nearby_stations(
         self, latitude: float, longitude: float, page: int = 1, page_size: int = NEARBY_PAGE_SIZE

@@ -415,6 +415,37 @@ class OngoingSession:
 
 
 @dataclass(slots=True)
+class ConnectedSession:
+    """A logged-in session / device on the account (``/api/user-sessions``).
+
+    ``id`` is what identifies a session for revocation. ``is_current`` marks the session making the request.
+    Fields are reconstructed from the app (the devices screen) and not yet confirmed on a real response.
+    """
+
+    id: str | None
+    device_model: str | None = None
+    ip: str | None = None
+    city: str | None = None
+    country: str | None = None
+    is_current: bool | None = None
+    created_at: datetime | None = None
+    raw: dict[str, Any] = field(default_factory=dict, repr=False)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ConnectedSession:
+        return cls(
+            id=_str(data.get("_id") or data.get("id")),
+            device_model=_str(data.get("deviceModel")),
+            ip=_str(data.get("ip")),
+            city=_str(data.get("city")),
+            country=_str(data.get("country")),
+            is_current=_bool(data.get("isCurrent")),
+            created_at=_datetime(data.get("createdAt")),
+            raw=data,
+        )
+
+
+@dataclass(slots=True)
 class SessionProgress:
     """A live progress update pushed on the socket (``chargingSessionProgress``).
 

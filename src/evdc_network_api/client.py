@@ -32,6 +32,7 @@ from .const import (
     PATH_SIGN_IN,
     PATH_TOTP_LOGIN,
     PATH_TOTP_RECOVERY_LOGIN,
+    PATH_USER_SESSIONS,
     PATH_VERIFY_OTP,
     REQ_SCOPE,
     TWO_FACTOR_METHOD_EMAIL,
@@ -39,7 +40,7 @@ from .const import (
 )
 from .crypto import encrypt_password
 from .exceptions import EvdcApiError, EvdcAuthError, EvdcTwoFactorRequiredError
-from .models import ChargingHistoryPage, ChargingSession, Evse, OngoingSession, Receipt, User
+from .models import ChargingHistoryPage, ChargingSession, ConnectedSession, Evse, OngoingSession, Receipt, User
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -342,6 +343,22 @@ class EvdcApiClient:
                 break
         return Evse.from_dict(payload)
 
+    def get_connected_sessions(self) -> list[ConnectedSession]:
+        """List the account's logged-in sessions / devices, the current one marked ``is_current``."""
+        body = self._authed("GET", PATH_USER_SESSIONS)
+        return [ConnectedSession.from_dict(item) for item in _items(body)]
+
+    def revoke_session(self, session_id: str) -> None:
+        """Revoke one logged-in session by its id (log that device out)."""
+        self._authed("DELETE", f"{PATH_USER_SESSIONS}/{quote(session_id, safe='')}", allow_empty=True)
+
+    def revoke_all_sessions(self) -> None:
+        """Revoke the account's logged-in sessions (log out the connected devices).
+
+        Whether the current session is kept or also revoked is decided by the backend and not yet confirmed.
+        """
+        self._authed("DELETE", PATH_USER_SESSIONS, allow_empty=True)
+
     def get_nearby_stations(
         self, latitude: float, longitude: float, page: int = 1, page_size: int = NEARBY_PAGE_SIZE
     ) -> list[Evse]:
@@ -441,6 +458,7 @@ class EvdcApiClient:
         json: dict[str, Any] | None = None,
         auth: bool = True,
         error_cls: type[EvdcApiError] = EvdcApiError,
+        allow_empty: bool = False,
     ) -> Any:
         url = self.base_url + path.lstrip("/")
         try:
@@ -460,7 +478,7 @@ class EvdcApiClient:
             raise EvdcAuthError(_error_message(body, resp.status_code), status_code=401)
         if not resp.ok:
             raise error_cls(_error_message(body, resp.status_code), status_code=resp.status_code)
-        if body is None:
+        if body is None and not allow_empty:
             raise EvdcApiError(f"Response is not JSON (HTTP {resp.status_code})", status_code=resp.status_code)
         return body
 

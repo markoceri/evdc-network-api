@@ -38,6 +38,8 @@ PATH_CHARGE_HISTORY = "api/hubject/charge-history"
 PATH_RECEIPT = "api/hubject/download-pdf/{session_id}"
 PATH_ONGOING_SESSIONS = "api/hubject/ongoing-sessionsV2"
 PATH_EVSE = "api/hubject/{evse_id}"
+# Connected login sessions / devices: GET lists them, DELETE one revokes it, DELETE the collection revokes the rest.
+PATH_USER_SESSIONS = "api/user-sessions"  # noqa: S105 - a URL path, not a secret
 # Longitude first (GeoJSON order): verified on the real backend, the reverse order returns far-away results.
 PATH_NEARBY = "api/hubject/nearby/{longitude}/{latitude}"
 
