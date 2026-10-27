@@ -4,7 +4,9 @@ from __future__ import annotations
 
 DEFAULT_BASE_URL = "https://api-v2.evdccharge.co/"
 DEFAULT_APP_VERSION = "1.1.10"
-DEFAULT_DEVICE_MODEL = "Android-14-Google-Pixel 8"
+# Sent as ``x-device-model`` and shown as the device name in the account's connected-devices list. An honest,
+# recognisable default (not an impersonated handset); override it with ``device_model`` to tell clients apart.
+DEFAULT_DEVICE_MODEL = "evdc-network-api"
 DEFAULT_TIMEOUT = 30
 DEFAULT_PAGE_SIZE = 10
 
