@@ -51,6 +51,20 @@ def test_async_find_stations_near(fake_session: FakeSession) -> None:
     assert [s.distance_m for s in stations] == [150.0, 300.0]
 
 
+def test_async_device_key_login(fake_session: FakeSession) -> None:
+    from evdc_network_api.client import EvdcApiClient
+    from evdc_network_api.crypto import generate_device_key
+
+    fake_session.add("POST", "api/biometric-login", FakeResponse(200, {"accessToken": "bio", "user": {"_id": "u1"}}))
+    sync = EvdcApiClient(email="x@example.com", device_key=generate_device_key(), user_id="u1", session=fake_session)  # type: ignore[arg-type]
+    client = AsyncEvdcApiClient(sync)
+
+    user = asyncio.run(client.login_with_device_key())
+
+    assert sync.access_token == "bio"
+    assert user.id == "u1"
+
+
 def test_async_connected_sessions(fake_session: FakeSession) -> None:
     fake_session.add("GET", "api/user-sessions", FakeResponse(200, {"data": [{"_id": "s1", "isCurrent": True}]}))
     fake_session.add("DELETE", "api/user-sessions/s1", FakeResponse(204, None))

@@ -224,6 +224,91 @@ def test_verify_two_factor_without_pending_raises(fake_session: FakeSession) -> 
         _client(fake_session).verify_two_factor("123456")
 
 
+# ---------------------------------------------------------------------------
+# Biometric device-key login
+# ---------------------------------------------------------------------------
+
+BIOMETRIC_LOGIN = "api/biometric-login"
+REMOVE_BIOMETRIC = "api/remove-biometricKey"
+
+
+def test_enroll_device_key_registers_public_key(fake_session: FakeSession) -> None:
+    from evdc_network_api.crypto import device_public_key
+
+    fake_session.add("PUT", PROFILE, _ok({"message": "ok"}))
+    client = _client(fake_session, access_token="token")
+    client.user_id = "u1"  # already known, so enroll makes no extra profile request
+
+    pem = client.enroll_device_key()
+
+    assert "PRIVATE KEY" in pem
+    assert fake_session.calls[0].method == "PUT"
+    assert fake_session.calls[0].path == PROFILE
+    assert fake_session.calls[0].json == {"biometricKey": device_public_key(pem)}
+
+
+def test_login_with_device_key_signs_payload_and_sets_tokens(fake_session: FakeSession) -> None:
+    import base64
+
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding, rsa
+
+    from evdc_network_api.crypto import device_public_key, generate_device_key
+
+    pem = generate_device_key()
+    fake_session.add(
+        "POST",
+        BIOMETRIC_LOGIN,
+        _ok({"accessToken": "bio-access", "refreshToken": "bio-refresh", "user": load_fixture("login")["data"]}),
+    )
+    client = _client(fake_session, password=None, device_key=pem, user_id="u1")
+
+    user = client.login_with_device_key()
+
+    assert client.access_token == "bio-access"
+    assert client.refresh_token == "bio-refresh"
+    assert user.email == "mario.rossi@example.com"
+    body = fake_session.calls[0].json
+    assert body is not None
+    assert body["fcmToken"] and body["userId"] == "u1"
+    # The signature must verify against the enrolled public key for the sent payload.
+    public = serialization.load_der_public_key(base64.b64decode(device_public_key(pem)))
+    assert isinstance(public, rsa.RSAPublicKey)
+    public.verify(base64.b64decode(body["signature"]), body["payload"].encode(), padding.PKCS1v15(), hashes.SHA256())
+
+
+def test_login_with_device_key_needs_key_and_user_id(fake_session: FakeSession) -> None:
+    with pytest.raises(EvdcAuthError, match="device key"):
+        _client(fake_session, password=None).login_with_device_key()
+    with pytest.raises(EvdcAuthError, match="user_id"):
+        _client(fake_session, password=None, device_key="x", user_id=None).login_with_device_key()
+
+
+def test_device_key_is_preferred_over_password_login(fake_session: FakeSession) -> None:
+    from evdc_network_api.crypto import generate_device_key
+
+    fake_session.add("POST", BIOMETRIC_LOGIN, _ok({"accessToken": "bio", "user": load_fixture("login")["data"]}))
+    fake_session.add("GET", ONGOING, _ok([]))
+    client = _client(fake_session, device_key=generate_device_key(), user_id="u1")
+
+    client.get_ongoing_sessions()  # auto-auth: should use the device key, not signIn-enc
+
+    assert fake_session.paths() == [BIOMETRIC_LOGIN, ONGOING]
+
+
+def test_remove_device_key(fake_session: FakeSession) -> None:
+    from evdc_network_api.crypto import device_public_key, generate_device_key
+
+    pem = generate_device_key()
+    fake_session.add("POST", REMOVE_BIOMETRIC, _ok({"message": "removed"}))
+    client = _client(fake_session, access_token="token", device_key=pem)
+
+    client.remove_device_key()
+
+    assert fake_session.calls[0].path == REMOVE_BIOMETRIC
+    assert fake_session.calls[0].json == {"biometricKey": device_public_key(pem)}
+
+
 def test_login_needs_password(fake_session: FakeSession) -> None:
     with pytest.raises(EvdcAuthError, match="password"):
         _client(fake_session, password=None).login()
