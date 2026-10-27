@@ -1,0 +1,38 @@
+{
+  "result": {
+    "data": [
+      {
+        "_id": "670000000000000000000001",
+        "user": "660000000000000000000099",
+        "balance": 41.97,
+        "currency": "EUR",
+        "lastTransactionId": "680000000000000000000001",
+        "isPrimary": true,
+        "isToken": false,
+        "currencyDetails": {
+          "currency": "EUR",
+          "decimals": 2,
+          "name": "Euro",
+          "symbol": "€",
+          "type": "FIAT"
+        }
+      },
+      {
+        "_id": "670000000000000000000002",
+        "user": "660000000000000000000099",
+        "balance": 352160.89,
+        "currency": "EVDC Token",
+        "isPrimary": false,
+        "isToken": true,
+        "currencyDetails": {
+          "currency": "EVDC Token",
+          "decimals": 2,
+          "name": "EVDC Token",
+          "symbol": "EVDC",
+          "type": "TOKEN"
+        }
+      }
+    ],
+    "count": 2
+  }
+}

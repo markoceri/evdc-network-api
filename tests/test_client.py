@@ -494,6 +494,55 @@ def test_revoke_all_sessions(fake_session: FakeSession) -> None:
     assert fake_session.calls[0].path == USER_SESSIONS
 
 
+WALLETS = "api/wallet/user/wallets"
+WALLET_HISTORY = "api/wallet/history"
+
+
+def test_get_wallets(fake_session: FakeSession) -> None:
+    fake_session.add("GET", WALLETS, _ok(load_fixture("wallets")))
+
+    wallets = _client(fake_session, access_token="token").get_wallets()
+
+    assert [w.currency for w in wallets] == ["EUR", "EVDC Token"]
+    assert wallets[0].balance == pytest.approx(41.97)
+    assert wallets[0].is_primary is True
+    assert wallets[0].currency_symbol == "€"
+    assert wallets[1].is_token is True
+    assert wallets[1].balance == pytest.approx(352160.89)
+
+
+def test_get_wallet_transactions(fake_session: FakeSession) -> None:
+    fake_session.add("GET", WALLET_HISTORY, _ok(load_fixture("wallet_history")))
+
+    page = _client(fake_session, access_token="token").get_wallet_transactions(page=1, limit=10)
+
+    assert page.total == 2
+    assert page.closing_balances["EUR"] == pytest.approx(41.97)
+    first = page.transactions[0]
+    assert first.amount == pytest.approx(-6.05)
+    assert first.session_id == "00000000-0000-4000-8000-000000000001"
+    assert first.category == "CHARGING"
+    assert page.transactions[1].amount == pytest.approx(50.0)
+    assert fake_session.calls[0].params == {"page": 1, "limit": 10}
+
+
+def test_get_wallet_transactions_filters(fake_session: FakeSession) -> None:
+    fake_session.add("GET", WALLET_HISTORY, _ok(load_fixture("wallet_history")))
+
+    _client(fake_session, access_token="token").get_wallet_transactions(currency="EUR", is_token=False)
+
+    assert fake_session.calls[0].params == {"page": 1, "limit": 10, "currency": "EUR", "isToken": False}
+
+
+def test_iter_wallet_transactions_stops_at_last_page(fake_session: FakeSession) -> None:
+    fake_session.add("GET", WALLET_HISTORY, _ok(load_fixture("wallet_history")))
+
+    txns = list(_client(fake_session, access_token="token").iter_wallet_transactions(limit=10))
+
+    assert len(txns) == 2
+    assert len(fake_session.calls) == 1
+
+
 def test_get_receipt(fake_session: FakeSession) -> None:
     session_id = "00000000-0000-4000-8000-000000000001"
     fake_session.add("GET", f"api/hubject/download-pdf/{session_id}", _ok(load_fixture("receipt")))
