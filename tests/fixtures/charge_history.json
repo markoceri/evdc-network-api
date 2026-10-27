@@ -30,7 +30,9 @@
         "Price": 0.59,
         "Unit": "KWH",
         "Currency": "EUR",
-        "consumedEnergy": 18.4
+        "consumedEnergy": 18.4,
+        "chargingPrice": 10.86,
+        "tokenConversionRate": 1
       },
       "timeDetails": {
         "durationInMinutes": 95,
@@ -109,10 +111,11 @@
       "evseId": "IT*TST*E0001*1",
       "invoiceNo": "INV-TEST-0002",
       "createdAt": "2026-01-12T18:30:00.000Z",
-      "amount": 4.28,
-      "currency": "EUR",
+      "amount": 128400.0,
+      "currency": "EVDC Token",
       "consumedEnergy": 7.25,
       "operator": "Test Charging Srl",
+      "isPaidByWallet": true,
       "company": null,
       "location": null,
       "time": null,
@@ -120,7 +123,9 @@
         "Price": 0.59,
         "Unit": "KWH",
         "Currency": "EUR",
-        "consumedEnergy": 7.25
+        "consumedEnergy": 7.25,
+        "chargingPrice": 4.28,
+        "tokenConversionRate": 30000.0
       },
       "timeDetails": {
         "durationInMinutes": 95,

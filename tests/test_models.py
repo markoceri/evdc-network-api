@@ -49,6 +49,9 @@ def test_charging_session_fields() -> None:
     assert session.amount == pytest.approx(10.86)
     assert session.currency == "EUR"
     assert session.energy_kwh == pytest.approx(18.4)
+    assert session.cost == pytest.approx(10.86)
+    assert session.cost_currency == "EUR"
+    assert session.token_conversion_rate == 1
     assert session.charging_duration_minutes == 95
     assert session.parking_fee == 0
     assert session.started_at == datetime(2026, 1, 11, 18, 30, tzinfo=UTC)
@@ -68,6 +71,17 @@ def test_charging_session_fields() -> None:
 def test_charging_session_energy_falls_back_to_pricing_details() -> None:
     session = ChargingSession.from_dict({"sessionId": "s", "pricingDetails": {"consumedEnergy": "3.5"}})
     assert session.energy_kwh == pytest.approx(3.5)
+
+
+def test_token_paid_session_cost_is_in_real_money() -> None:
+    # A token-paid session: amount is in tokens, but cost/cost_currency give the real-money price.
+    session = ChargingHistoryPage.from_dict(load_fixture("charge_history")).sessions[1]
+    assert session.currency == "EVDC Token"
+    assert session.amount == pytest.approx(128400.0)
+    assert session.cost == pytest.approx(4.28)
+    assert session.cost_currency == "EUR"
+    assert session.token_conversion_rate == pytest.approx(30000.0)
+    assert session.amount == pytest.approx(session.cost * session.token_conversion_rate)
 
 
 def test_charging_session_tolerates_missing_fields() -> None:
