@@ -37,7 +37,7 @@ A request interceptor adds these headers to every call made through the shared a
 | `req-scope` | `MOBILEMED-FE` (constant) |
 | `x-device-id` | Stable per-device id: 64 hex chars. The app derives it as HMAC-SHA256 of the Android ID with an app-embedded key, so any stable random 64-hex value should be equivalent. |
 | `x-user-id` | `_id` of the logged-in user, when known |
-| `x-device-model` | `<os>-<osVersion>-<brand>-<model>`, e.g. `Android-14-Google-Pixel 8` |
+| `x-device-model` | Free text; shown as the device name in the connected-devices list. The app sends `<os>-<osVersion>-<brand>-<model>` (e.g. `Android-14-Google-Pixel 8`); this library defaults to `evdc-network-api`. |
 | `x-app-version` | App version, e.g. `1.1.10` |
 | `x-request-id` | Random UUID v4 per request |
 

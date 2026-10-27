@@ -124,7 +124,8 @@ except EvdcTwoFactorRequiredError as exc:
 
 The account's logged-in sessions (devices) can be listed and revoked. A session is created per device id, so pass a
 **stable** `device_id` (a 64-hex string kept across runs) to stay one device instead of registering a new one each
-login:
+login. The session shows up under `device_model` (default `evdc-network-api`); set `device_model` to tell clients
+apart:
 
 ```python
 for s in client.get_connected_sessions():

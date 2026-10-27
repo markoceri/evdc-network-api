@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   backend. A session is created per `x-device-id`, so pass a stable `device_id` to stay a single device.
   `ConnectedSession` carries the device id/model, app version, IP, geo (city/country/timezone/lat/long), status,
   `is_current`, creation and expiry, and the user id.
+- The default `device_model` (sent as `x-device-model` and shown as the device name in the connected-devices list)
+  is now `evdc-network-api` instead of an impersonated handset; override it with `device_model` to tell clients
+  apart.
 - `EvdcLiveClient` (`live` extra, `python-socketio`): live `chargingSessionProgress` updates as `SessionProgress`,
   with token refresh on socket authentication errors. Not yet tested on a real session.
 - Two-factor login. When an account has 2FA enabled, `login()` raises `EvdcTwoFactorRequiredError` (carrying the
