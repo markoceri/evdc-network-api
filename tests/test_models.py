@@ -167,16 +167,30 @@ def test_connected_session_from_dict() -> None:
     session = ConnectedSession.from_dict(
         {
             "_id": "abc",
+            "deviceId": "f" * 64,
             "deviceModel": "Pixel 8",
+            "appVersion": "1.1.10",
             "ip": "203.0.113.1",
             "city": "Milano",
             "country": "IT",
+            "timezone": "Europe/Rome",
+            "latitude": 45.46,
+            "longitude": 9.19,
+            "status": "ACTIVE",
             "isCurrent": True,
             "createdAt": "2024-01-02T03:04:05Z",
+            "expiresAt": "2024-01-09T03:04:05Z",
+            "user": "u1",
         }
     )
     assert session.id == "abc"
+    assert session.device_id == "f" * 64
     assert session.device_model == "Pixel 8"
+    assert session.app_version == "1.1.10"
     assert session.city == "Milano"
+    assert session.latitude == pytest.approx(45.46)
+    assert session.status == "ACTIVE"
     assert session.is_current is True
+    assert session.user_id == "u1"
     assert session.created_at == datetime(2024, 1, 2, 3, 4, 5, tzinfo=UTC)
+    assert session.expires_at == datetime(2024, 1, 9, 3, 4, 5, tzinfo=UTC)
