@@ -40,6 +40,11 @@ PATH_CHARGE_HISTORY = "api/hubject/charge-history"
 PATH_RECEIPT = "api/hubject/download-pdf/{session_id}"
 PATH_ONGOING_SESSIONS = "api/hubject/ongoing-sessionsV2"
 PATH_EVSE = "api/hubject/{evse_id}"
+# Biometric device-key login: enroll the public key via PUT /api/profile, then log in without password or 2FA.
+PATH_BIOMETRIC_LOGIN = "api/biometric-login"  # noqa: S105 - a URL path, not a secret
+PATH_REMOVE_BIOMETRIC_KEY = "api/remove-biometricKey"  # noqa: S105 - a URL path, not a secret
+# ``fcmToken`` is a required-non-empty push token the device-key login does not actually use; a constant passes it.
+DEFAULT_FCM_TOKEN = "evdc-network-api"  # noqa: S105 - a placeholder, not a secret
 # Connected login sessions / devices: GET lists them, DELETE one revokes it, DELETE the collection revokes the rest.
 PATH_USER_SESSIONS = "api/user-sessions"  # noqa: S105 - a URL path, not a secret
 # Longitude first (GeoJSON order): verified on the real backend, the reverse order returns far-away results.

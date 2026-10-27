@@ -7,6 +7,7 @@ __version__ = "0.1.0"
 from .async_client import AsyncEvdcApiClient
 from .client import EvdcApiClient
 from .const import DEFAULT_BASE_URL, DEFAULT_PAGE_SIZE
+from .crypto import generate_device_key
 from .exceptions import EvdcApiError, EvdcAuthError, EvdcTwoFactorRequiredError
 from .models import (
     Address,
@@ -42,4 +43,5 @@ __all__ = [
     "SessionProgress",
     "User",
     "__version__",
+    "generate_device_key",
 ]

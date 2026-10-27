@@ -50,6 +50,15 @@ class AsyncEvdcApiClient:
     async def resend_two_factor_code(self) -> None:
         await asyncio.to_thread(self._client.resend_two_factor_code)
 
+    async def enroll_device_key(self, device_key: str | None = None) -> str:
+        return await asyncio.to_thread(self._client.enroll_device_key, device_key)
+
+    async def login_with_device_key(self, device_key: str | None = None) -> User:
+        return await asyncio.to_thread(self._client.login_with_device_key, device_key)
+
+    async def remove_device_key(self, device_key: str | None = None) -> None:
+        await asyncio.to_thread(self._client.remove_device_key, device_key)
+
     async def token_refresh(self) -> None:
         await asyncio.to_thread(self._client.token_refresh)
 

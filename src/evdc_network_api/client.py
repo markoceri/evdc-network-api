@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import secrets
+import time
 import uuid
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Self
@@ -15,12 +16,14 @@ from .const import (
     DEFAULT_APP_VERSION,
     DEFAULT_BASE_URL,
     DEFAULT_DEVICE_MODEL,
+    DEFAULT_FCM_TOKEN,
     DEFAULT_NEARBY_RADIUS_M,
     DEFAULT_PAGE_SIZE,
     DEFAULT_TIMEOUT,
     MAX_NEARBY_PAGE_SIZE,
     NEARBY_PAGE_SIZE,
     NEARBY_SEARCH_PAGE_SIZE,
+    PATH_BIOMETRIC_LOGIN,
     PATH_CHARGE_HISTORY,
     PATH_EVSE,
     PATH_NEARBY,
@@ -28,6 +31,7 @@ from .const import (
     PATH_PROFILE,
     PATH_RECEIPT,
     PATH_REFRESH_TOKEN,
+    PATH_REMOVE_BIOMETRIC_KEY,
     PATH_RESEND_CODE,
     PATH_SIGN_IN,
     PATH_TOTP_LOGIN,
@@ -38,7 +42,7 @@ from .const import (
     TWO_FACTOR_METHOD_EMAIL,
     TWO_FACTOR_METHOD_TOTP,
 )
-from .crypto import encrypt_password
+from .crypto import device_public_key, encrypt_password, generate_device_key, sign_device_payload
 from .exceptions import EvdcApiError, EvdcAuthError, EvdcTwoFactorRequiredError
 from .models import ChargingHistoryPage, ChargingSession, ConnectedSession, Evse, OngoingSession, Receipt, User
 
@@ -88,11 +92,16 @@ class EvdcApiClient:
         app_version: str = DEFAULT_APP_VERSION,
         session: requests.Session | None = None,
         on_tokens_updated: Callable[[str, str | None], None] | None = None,
+        device_key: str | None = None,
+        user_id: str | None = None,
     ) -> None:
         self.email = email
         self._password = password
         self.access_token = access_token
         self.refresh_token = refresh_token
+        # A biometric device key (RSA private PEM) logs in without password or 2FA; user_id is the account id it
+        # needs. Persist both, like the tokens, and keep the key outside the repository.
+        self._device_key = device_key
         self.base_url = base_url.rstrip("/") + "/"
         self.timeout = timeout
         # The app sends a stable 64-hex device id (HMAC-SHA256 of the Android ID). Pass the same value across runs.
@@ -101,7 +110,7 @@ class EvdcApiClient:
         self.app_version = app_version
         self.session = session or requests.Session()
         self.on_tokens_updated = on_tokens_updated
-        self.user_id: str | None = None
+        self.user_id: str | None = user_id
         self._pending_two_factor: _PendingTwoFactor | None = None
 
     def __repr__(self) -> str:
@@ -249,6 +258,69 @@ class EvdcApiClient:
         _LOGGER.debug("EVDC two-factor verification succeeded")
         return user
 
+    # ------------------------------------------------------------------
+    # Biometric device-key login (long-term, password/2FA-free)
+    # ------------------------------------------------------------------
+
+    def enroll_device_key(self, device_key: str | None = None) -> str:
+        """Register a device key on the account for later password/2FA-free login, and return its private PEM.
+
+        Requires an authenticated session (this enrolls while logged in). Pass an existing private-key PEM to
+        re-register it, or omit it to generate a new one. **Persist the returned PEM outside the repository** and
+        pass it back as ``device_key`` (with ``user_id``) to log in later with :meth:`login_with_device_key`.
+        """
+        key = device_key or generate_device_key()
+        self._authed("PUT", PATH_PROFILE, json={"biometricKey": device_public_key(key)})
+        if not self.user_id:
+            self.user_id = self.get_profile().id
+        self._device_key = key
+        _LOGGER.debug("EVDC device key enrolled")
+        return key
+
+    def login_with_device_key(self, device_key: str | None = None, *, fcm_token: str = DEFAULT_FCM_TOKEN) -> User:
+        """Log in with a device key, without password or two-factor, via ``/api/biometric-login``.
+
+        Needs the private-key PEM (``device_key`` or the one passed to the constructor) and ``user_id``.
+        """
+        key = device_key or self._device_key
+        if not key:
+            raise EvdcAuthError("No device key available; enroll one first with enroll_device_key().")
+        if not self.user_id:
+            raise EvdcAuthError("A user_id is required to log in with a device key.")
+        payload = str(int(time.time()))  # epoch seconds, signed as-is
+        body = self._request(
+            "POST",
+            PATH_BIOMETRIC_LOGIN,
+            json={
+                "fcmToken": fcm_token,
+                "signature": sign_device_payload(key, payload),
+                "payload": payload,
+                "userId": self.user_id,
+            },
+            auth=False,
+            error_cls=EvdcAuthError,
+        )
+        # biometric-login returns the tokens at the root and the account under ``user``.
+        access_token = _str(body.get("accessToken"))
+        if not access_token:
+            raise EvdcAuthError("Device-key login returned no access token.")
+        self._device_key = key
+        self._set_tokens(access_token, _str(body.get("refreshToken")))
+        user = User.from_dict(_dict(body.get("user")) or _dict(body))
+        self.user_id = user.id or self.user_id
+        _LOGGER.debug("EVDC device-key login succeeded")
+        return user
+
+    def remove_device_key(self, device_key: str | None = None) -> None:
+        """Revoke a device key on the account so it can no longer be used to log in."""
+        key = device_key or self._device_key
+        if not key:
+            raise EvdcAuthError("No device key to remove.")
+        self._authed("POST", PATH_REMOVE_BIOMETRIC_KEY, json={"biometricKey": device_public_key(key)})
+        if key == self._device_key:
+            self._device_key = None
+        _LOGGER.debug("EVDC device key removed")
+
     def token_refresh(self) -> None:
         """Get a new access token from the refresh token."""
         if not self.refresh_token:
@@ -273,6 +345,9 @@ class EvdcApiClient:
         if self.on_tokens_updated is not None:
             self.on_tokens_updated(access_token, refresh_token)
 
+    def _can_device_key_login(self) -> bool:
+        return bool(self._device_key and self.user_id)
+
     def _ensure_token(self) -> None:
         if self.access_token:
             return
@@ -281,19 +356,27 @@ class EvdcApiClient:
                 self.token_refresh()
                 return
             except EvdcAuthError:
-                _LOGGER.debug("Token refresh failed, falling back to full login")
+                _LOGGER.debug("Token refresh failed, trying the next method")
+        # A device key logs in without password or 2FA; prefer it over a password login that may need a 2FA code.
+        if self._can_device_key_login():
+            self.login_with_device_key()
+            return
         self.login()
 
     def _reauthenticate(self) -> None:
-        """Called after a 401: refresh once, or log in again if the refresh fails."""
+        """Called after a 401: refresh, then a device-key login, then a password login."""
         self.access_token = None
         try:
             self.token_refresh()
+            return
         except EvdcAuthError:
-            if not self._password:
-                raise
-            _LOGGER.debug("Token refresh failed, falling back to full login")
-            self.login()
+            _LOGGER.debug("Token refresh failed, trying the next method")
+        if self._can_device_key_login():
+            self.login_with_device_key()
+            return
+        if not self._password:
+            raise EvdcAuthError("Cannot re-authenticate: no refresh token, device key or password.")
+        self.login()
 
     # ------------------------------------------------------------------
     # Public API — data
