@@ -165,9 +165,14 @@ def test_verify_two_factor_email_falls_back_to_held_token(fake_session: FakeSess
     assert user.email == "mario.rossi@example.com"
 
 
-def test_verify_two_factor_totp_uses_response_tokens(fake_session: FakeSession) -> None:
-    fake_session.add("POST", LOGIN, _ok({"data": {"isTwoFactorEnabled": True, "twoFactorMethod": "totp"}}))
-    fake_session.add("POST", TOTP_LOGIN, _ok(load_fixture("login")))
+def test_verify_two_factor_totp_uses_held_token_and_root_user(fake_session: FakeSession) -> None:
+    # signIn-enc holds a pre-2FA token; the TOTP endpoint needs it in Authorization and returns the user at the root.
+    fake_session.add(
+        "POST",
+        LOGIN,
+        _ok({"data": {"isTwoFactorEnabled": True, "twoFactorMethod": "totp", "accessToken": "pre-2fa"}}),
+    )
+    fake_session.add("POST", TOTP_LOGIN, _ok(load_fixture("login")["data"]))
     client = _client(fake_session)
     with pytest.raises(EvdcTwoFactorRequiredError):
         client.login()
@@ -178,12 +183,17 @@ def test_verify_two_factor_totp_uses_response_tokens(fake_session: FakeSession) 
     assert client.two_factor_pending is None
     assert user.email == "mario.rossi@example.com"
     assert fake_session.calls[1].path == TOTP_LOGIN
+    assert fake_session.calls[1].headers["Authorization"] == "Bearer pre-2fa"
     assert fake_session.calls[1].json == {"email": "mario.rossi@example.com", "totpCode": "000111"}
 
 
 def test_verify_recovery_code(fake_session: FakeSession) -> None:
-    fake_session.add("POST", LOGIN, _ok({"data": {"isTwoFactorEnabled": True, "twoFactorMethod": "totp"}}))
-    fake_session.add("POST", TOTP_RECOVERY, _ok(load_fixture("login")))
+    fake_session.add(
+        "POST",
+        LOGIN,
+        _ok({"data": {"isTwoFactorEnabled": True, "twoFactorMethod": "totp", "accessToken": "pre-2fa"}}),
+    )
+    fake_session.add("POST", TOTP_RECOVERY, _ok(load_fixture("login")["data"]))
     client = _client(fake_session)
     with pytest.raises(EvdcTwoFactorRequiredError):
         client.login()
@@ -192,6 +202,7 @@ def test_verify_recovery_code(fake_session: FakeSession) -> None:
 
     assert client.access_token == "test-access-token"
     assert fake_session.calls[1].path == TOTP_RECOVERY
+    assert fake_session.calls[1].headers["Authorization"] == "Bearer pre-2fa"
     assert fake_session.calls[1].json == {"email": "mario.rossi@example.com", "recoveryCode": "abcd-efgh"}
 
 
