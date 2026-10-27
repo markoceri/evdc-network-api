@@ -86,17 +86,22 @@ login is completed with a verification code before the session is used. The meth
 | `totp` | `POST /api/2fa/totp/login` | `{ "email", "totpCode" }` |
 | `totp` (recovery) | `POST /api/2fa/totp/recovery-login` | `{ "email", "recoveryCode" }` |
 
-`verifyOTP` is **verified** on a real account: a correct code returns HTTP 200 with the user and fresh session
-tokens nested under `user`, a wrong code returns HTTP 400.
+Both methods are **verified** on real accounts. The two endpoints differ in how they authenticate and where they
+put the tokens:
 
-```json
-{ "user": { "...user fields...", "accessToken": "…", "refreshToken": "…", "token": "…" },
-  "message": "Verification code verified successfully." }
-```
+- **`email`** — `POST /api/verifyOTP` is **unauthenticated** (no bearer). A correct code returns HTTP 200 with the
+  user and fresh tokens nested under `user`; a wrong code returns HTTP 400.
+  ```json
+  { "user": { "...user fields...", "accessToken": "…", "refreshToken": "…" },
+    "message": "Verification code verified successfully." }
+  ```
+- **`totp`** — `POST /api/2fa/totp/login` (and `/recovery-login`) **require** the pre-2FA token that `signIn-enc`
+  returns, sent as `Authorization: Bearer`. Without it the server answers HTTP 401 `No auth token`. The response is
+  the **user object at the root** (not nested), with `accessToken` / `refreshToken` / `token`.
 
-The TOTP endpoints are reconstructed from the app; their response is expected under `data` (not yet confirmed). The
-client exposes `verify_two_factor()`, `verify_recovery_code()` and `resend_two_factor_code()`, and reads the tokens
-from `user` or `data`.
+So `signIn-enc` returns a token even when 2FA is pending: for `email` it is only held by the client, for `totp` it
+is also needed to authorise the verification call. The client holds it either way and exposes `verify_two_factor()`,
+`verify_recovery_code()` and `resend_two_factor_code()`, reading the tokens from `user`, `data` or the root.
 
 ### Token refresh — `POST /api/refresh-token`
 
