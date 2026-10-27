@@ -110,17 +110,19 @@ same scheme works for a headless client that holds the private key itself, givin
 password and no 2FA.
 
 - **Enroll** (while authenticated): `PUT /api/profile { "biometricKey": "<base64 DER SPKI public key>" }`. The
-  server stores the public key in the account's `biometricKeys`. `PUT /api/profile` **merges** (the app sends only
-  the edited fields), so sending just `biometricKey` leaves the rest of the profile untouched. Note `GET
-  /api/profile` does **not** return `biometricKeys` (the biometric-login response does).
+  server **appends** the key to the account's `biometricKeys` **list** (it does not replace existing keys, so every
+  device keeps its own). `PUT /api/profile` **merges** (the app sends only the edited fields), so sending just
+  `biometricKey` leaves the rest of the profile untouched. `GET /api/profile` does **not** return `biometricKeys`
+  (the biometric-login response does).
 - **Login**: `POST /api/biometric-login` (unauthenticated) with
   ```json
   { "fcmToken": "<non-empty>", "signature": "<base64>", "payload": "<epoch seconds>", "userId": "<_id>" }
   ```
   `payload` is `Math.round(Date.now()/1000)` as a string; `signature` is RSA **PKCS#1 v1.5 over SHA-256** of the
-  payload bytes, base64. `fcmToken` must be non-empty but is not otherwise used (a constant works; it does not
-  overwrite the real push token). Response (HTTP 200): tokens at the **root** (`accessToken`, `refreshToken`,
-  `token`) plus the account under `user`. The access token lasts 5 minutes; a refresh token is issued too.
+  payload bytes, base64. There is **no device identifier** in the body — the server verifies the signature against
+  **any** key in the account's `biometricKeys`. `fcmToken` must be non-empty but is not otherwise used (a constant
+  works; it does not overwrite the real push token). Response (HTTP 200): tokens at the **root** (`accessToken`,
+  `refreshToken`, `token`) plus the account under `user`. The access token lasts 5 minutes; a refresh token too.
 - **Remove**: `POST /api/remove-biometricKey { "biometricKey": "<base64 DER SPKI public key>" }`.
 
 Key format is what `react-native-biometrics` produces: RSA-2048, public key as base64 of the DER
