@@ -132,3 +132,31 @@ def test_session_progress_accepts_camel_case_evse_id_and_epoch_time() -> None:
     progress = SessionProgress.from_dict({"evseId": "X*1", "Time": 1768896000000})
     assert progress.evse_id == "X*1"
     assert progress.time == datetime(2026, 1, 20, 8, tzinfo=UTC)
+
+
+def test_nearby_evse_fields() -> None:
+    evse = Evse.from_dict(load_fixture("nearby_page1")["result"][9])
+    assert evse.evse_id == "IT*TST*E1004*2"
+    assert evse.name == "Test Station 1004"
+    assert evse.status == "Occupied"
+    assert evse.distance_m == 1500
+    assert evse.max_power_kw == 150
+    assert evse.facilities[0].power_type == "DC"
+    assert evse.address is not None
+    assert evse.address.city == "Testville"
+    assert evse.latitude == pytest.approx(45.0009)
+
+
+def test_pricing_by_payment_type() -> None:
+    pricing = Evse.from_dict(load_fixture("nearby_page1")["result"][1]).pricing
+    assert pricing is not None
+    assert pricing.price == pytest.approx(0.50)
+    assert pricing.token_price == pytest.approx(0.50)
+    assert pricing.card_price == pytest.approx(0.55)
+    assert pricing.base_price == pytest.approx(0.48)
+    assert (pricing.unit, pricing.currency, pricing.base_currency) == ("kWh", "EUR", "EUR")
+    assert pricing.parking_fee_enabled is False
+
+
+def test_evse_without_facilities_has_no_max_power() -> None:
+    assert Evse.from_dict({"EvseID": "X*1"}).max_power_kw is None

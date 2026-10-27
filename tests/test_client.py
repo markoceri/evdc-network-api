@@ -296,3 +296,132 @@ def test_context_manager_closes_session(fake_session: FakeSession) -> None:
     with _client(fake_session):
         pass
     assert fake_session.closed
+
+
+# ---------------------------------------------------------------------------
+# Nearby stations
+# ---------------------------------------------------------------------------
+
+NEARBY = "api/hubject/nearby/9.190000/45.464200"
+
+
+def test_get_nearby_stations_puts_longitude_first(fake_session: FakeSession) -> None:
+    fake_session.add("GET", NEARBY, _ok(load_fixture("nearby_page1")))
+
+    stations = _client(fake_session, access_token="token").get_nearby_stations(45.4642, 9.19)
+
+    assert fake_session.calls[0].path == NEARBY
+    assert fake_session.calls[0].params == {"page": 1, "pageSize": 10}
+    assert len(stations) == 10
+    assert stations[0].distance_m == 150
+    assert stations[0].pricing is not None
+    assert stations[0].pricing.price == pytest.approx(0.45)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"latitude": 91.0, "longitude": 9.0}, "latitude"),
+        ({"latitude": 45.0, "longitude": -181.0}, "longitude"),
+        ({"latitude": 45.0, "longitude": 9.0, "page": 0}, "page"),
+        ({"latitude": 45.0, "longitude": 9.0, "page_size": 101}, "page_size"),
+    ],
+)
+def test_get_nearby_stations_validates_arguments(
+    fake_session: FakeSession, kwargs: dict[str, float], message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        _client(fake_session, access_token="token").get_nearby_stations(**kwargs)  # type: ignore[arg-type]
+    assert fake_session.calls == []
+
+
+@pytest.fixture
+def small_search_pages(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The fixtures hold 10 items per page: make the radius search read pages of 10."""
+    monkeypatch.setattr("evdc_network_api.client.NEARBY_SEARCH_PAGE_SIZE", 10)
+
+
+def test_find_stations_near_reads_large_pages(fake_session: FakeSession) -> None:
+    fake_session.add("GET", NEARBY, _ok(load_fixture("nearby_page1")))
+
+    _client(fake_session, access_token="token").find_stations_near(45.4642, 9.19)
+
+    assert [c.params for c in fake_session.calls] == [{"page": 1, "pageSize": 50}]
+
+
+@pytest.mark.usefixtures("small_search_pages")
+def test_find_stations_near_stops_at_radius(fake_session: FakeSession) -> None:
+    fake_session.add("GET", NEARBY, _ok(load_fixture("nearby_page1")), _ok(load_fixture("nearby_page2")))
+
+    stations = _client(fake_session, access_token="token").find_stations_near(45.4642, 9.19, radius_m=2000)
+
+    # page 1: 150..1500 m; page 2 repeats the last item of page 1, then 1600, 1900, 2200 m
+    assert [s.distance_m for s in stations] == [150.0 * n for n in range(1, 11)] + [1600.0, 1900.0]
+    assert len({s.evse_id for s in stations}) == len(stations)
+    assert [c.params for c in fake_session.calls] == [{"page": 1, "pageSize": 10}, {"page": 2, "pageSize": 10}]
+
+
+@pytest.mark.usefixtures("small_search_pages")
+def test_find_stations_near_small_radius_needs_one_request(fake_session: FakeSession) -> None:
+    fake_session.add("GET", NEARBY, _ok(load_fixture("nearby_page1")))
+
+    stations = _client(fake_session, access_token="token").find_stations_near(45.4642, 9.19, radius_m=500)
+
+    assert [s.distance_m for s in stations] == [150.0, 300.0, 450.0]
+    assert len(fake_session.calls) == 1
+
+
+@pytest.mark.usefixtures("small_search_pages")
+def test_find_stations_near_respects_max_results(fake_session: FakeSession) -> None:
+    fake_session.add("GET", NEARBY, _ok(load_fixture("nearby_page1")))
+
+    stations = _client(fake_session, access_token="token").find_stations_near(
+        45.4642, 9.19, radius_m=100_000, max_results=4
+    )
+
+    assert len(stations) == 4
+    assert len(fake_session.calls) == 1
+
+
+@pytest.mark.usefixtures("small_search_pages")
+def test_find_stations_near_stops_on_short_page(fake_session: FakeSession) -> None:
+    fake_session.add("GET", NEARBY, _ok({"result": load_fixture("nearby_page1")["result"][:3]}))
+
+    stations = _client(fake_session, access_token="token").find_stations_near(45.4642, 9.19, radius_m=100_000)
+
+    assert len(stations) == 3
+    assert len(fake_session.calls) == 1
+
+
+@pytest.mark.usefixtures("small_search_pages")
+def test_find_stations_near_has_no_default_result_limit(fake_session: FakeSession) -> None:
+    pages = [
+        _ok({"result": [{"EvseID": f"IT*FAK*E{n:03d}", "distance": float(n)} for n in range(p * 10, p * 10 + 10)]})
+        for p in range(15)
+    ]
+    fake_session.add("GET", NEARBY, *pages, _ok({"result": []}))
+
+    stations = _client(fake_session, access_token="token").find_stations_near(45.4642, 9.19, radius_m=100_000)
+
+    assert len(stations) == 150
+    assert len(fake_session.calls) == 16
+
+
+@pytest.mark.usefixtures("small_search_pages")
+def test_find_stations_near_stops_when_pages_repeat(fake_session: FakeSession) -> None:
+    # a backend ignoring ``page`` would return the same page forever
+    fake_session.add("GET", NEARBY, _ok(load_fixture("nearby_page1")))
+
+    stations = _client(fake_session, access_token="token").find_stations_near(45.4642, 9.19, radius_m=100_000)
+
+    assert len(stations) == 10
+    assert len(fake_session.calls) == 2
+
+
+@pytest.mark.parametrize(("kwargs", "message"), [({"radius_m": 0}, "radius_m"), ({"max_results": 0}, "max_results")])
+def test_find_stations_near_validates_arguments(
+    fake_session: FakeSession, kwargs: dict[str, float], message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        _client(fake_session, access_token="token").find_stations_near(45.0, 9.0, **kwargs)  # type: ignore[arg-type]
+    assert fake_session.calls == []

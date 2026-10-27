@@ -41,3 +41,11 @@ def test_async_get_all_charge_history(fake_session: FakeSession) -> None:
     sessions = asyncio.run(_async_client(fake_session).get_all_charge_history(limit=2))
 
     assert len(sessions) == 3
+
+
+def test_async_find_stations_near(fake_session: FakeSession) -> None:
+    fake_session.add("GET", "api/hubject/nearby/9.000000/45.000000", FakeResponse(200, load_fixture("nearby_page1")))
+
+    stations = asyncio.run(_async_client(fake_session).find_stations_near(45.0, 9.0, radius_m=400))
+
+    assert [s.distance_m for s in stations] == [150.0, 300.0]

@@ -1,0 +1,1374 @@
+{
+  "result": [
+    {
+      "_id": "670000000000000000000000",
+      "EvseID": "IT*TST*E1000*1",
+      "EvseData": {
+        "EvseID": "IT*TST*E1000*1",
+        "ChargingStationID": null,
+        "HardwareManufacturer": null,
+        "ChargingStationImage": null,
+        "SubOperatorName": null,
+        "ChargingPoolID": null,
+        "Address": {
+          "Country": "ITA",
+          "City": "Testville",
+          "Street": "Via Test 0",
+          "PostalCode": "00000",
+          "HouseNum": "",
+          "Floor": null,
+          "Region": null,
+          "TimeZone": null,
+          "ParkingFacility": null,
+          "ParkingSpot": null
+        },
+        "GeoCoordinates": {
+          "Google": null,
+          "DecimalDegree": {
+            "Latitude": "45.000000",
+            "Longitude": "9.000000"
+          },
+          "DegreeMinuteSeconds": null
+        },
+        "Plugs": [
+          "Type2Outlet"
+        ],
+        "DynamicPowerLevel": null,
+        "ChargingFacilities": [
+          {
+            "PowerType": "AC_3_PHASE",
+            "Voltage": null,
+            "Amperage": null,
+            "Power": 22
+          }
+        ],
+        "RenewableEnergy": true,
+        "EnergySource": null,
+        "EnvironmentalImpact": null,
+        "AuthenticationModes": [
+          "REMOTE",
+          "NFC RFID Classic"
+        ],
+        "MaxCapacity": 22,
+        "PaymentOptions": [
+          "Contract"
+        ],
+        "ValueAddedServices": [
+          "Reservation"
+        ],
+        "Accessibility": "Free publicly accessible",
+        "AccessibilityLocation": null,
+        "HotlinePhoneNumber": null,
+        "AdditionalInfo": null,
+        "ChargingStationLocationReference": null,
+        "GeoChargingPointEntrance": null,
+        "IsOpen24Hours": true,
+        "HubOperatorID": null,
+        "ClearinghouseID": null,
+        "IsHubjectCompatible": true,
+        "DynamicInfoAvailable": "true",
+        "deltaType": "insert",
+        "lastUpdate": "2026-01-02T00:00:00+00:00",
+        "CalibrationLawDataAvailability": "Not Available",
+        "OperatorID": "IT*TST",
+        "OperatorName": "Test Charging Srl",
+        "ChargingStationNames": [
+          {
+            "lang": "it",
+            "value": "Test Station 1000"
+          }
+        ]
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "insertedAt": "2026-01-01T00:00:00.000Z",
+      "isAvailable": false,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          9.0,
+          45.0
+        ]
+      },
+      "pricingDetails": {
+        "Unit": "kWh",
+        "BaseAmount": 0.43,
+        "BaseCurrency": "EUR",
+        "Price": "0.45",
+        "Currency": "EUR",
+        "evseId": "IT*TST*E1000*1",
+        "currentType": "AC",
+        "parkingPricing": {
+          "IsEnabled": false,
+          "IsParkingFeeEnabled": false,
+          "ParkingFee": 0.0,
+          "ParkingCap": 60,
+          "Currency": "EUR",
+          "exception": null,
+          "restrictions": null,
+          "MaxDurationInMinutes": 720,
+          "MaxFee": 20
+        },
+        "isDefault": false,
+        "PreAuthHoldAmount": 35,
+        "commissionPercent": 5,
+        "pricingByType": {
+          "TOKEN": {
+            "Price": "0.45",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          },
+          "CARD": {
+            "Price": "0.50",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          }
+        },
+        "costKwh": null
+      },
+      "status": "Available",
+      "updateKey": "TESTKEY",
+      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "Protocol": "HUBJECT",
+      "partner": null,
+      "monetization": true,
+      "distance": 150.0
+    },
+    {
+      "_id": "670000000000000000000001",
+      "EvseID": "IT*TST*E1000*2",
+      "EvseData": {
+        "EvseID": "IT*TST*E1000*2",
+        "ChargingStationID": null,
+        "HardwareManufacturer": null,
+        "ChargingStationImage": null,
+        "SubOperatorName": null,
+        "ChargingPoolID": null,
+        "Address": {
+          "Country": "ITA",
+          "City": "Testville",
+          "Street": "Via Test 1",
+          "PostalCode": "00000",
+          "HouseNum": "",
+          "Floor": null,
+          "Region": null,
+          "TimeZone": null,
+          "ParkingFacility": null,
+          "ParkingSpot": null
+        },
+        "GeoCoordinates": {
+          "Google": null,
+          "DecimalDegree": {
+            "Latitude": "45.000100",
+            "Longitude": "9.000100"
+          },
+          "DegreeMinuteSeconds": null
+        },
+        "Plugs": [
+          "Type2Outlet"
+        ],
+        "DynamicPowerLevel": null,
+        "ChargingFacilities": [
+          {
+            "PowerType": "AC_3_PHASE",
+            "Voltage": null,
+            "Amperage": null,
+            "Power": 22
+          }
+        ],
+        "RenewableEnergy": true,
+        "EnergySource": null,
+        "EnvironmentalImpact": null,
+        "AuthenticationModes": [
+          "REMOTE",
+          "NFC RFID Classic"
+        ],
+        "MaxCapacity": 22,
+        "PaymentOptions": [
+          "Contract"
+        ],
+        "ValueAddedServices": [
+          "Reservation"
+        ],
+        "Accessibility": "Free publicly accessible",
+        "AccessibilityLocation": null,
+        "HotlinePhoneNumber": null,
+        "AdditionalInfo": null,
+        "ChargingStationLocationReference": null,
+        "GeoChargingPointEntrance": null,
+        "IsOpen24Hours": true,
+        "HubOperatorID": null,
+        "ClearinghouseID": null,
+        "IsHubjectCompatible": true,
+        "DynamicInfoAvailable": "true",
+        "deltaType": "insert",
+        "lastUpdate": "2026-01-02T00:00:00+00:00",
+        "CalibrationLawDataAvailability": "Not Available",
+        "OperatorID": "IT*TST",
+        "OperatorName": "Test Charging Srl",
+        "ChargingStationNames": [
+          {
+            "lang": "it",
+            "value": "Test Station 1000"
+          }
+        ]
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "insertedAt": "2026-01-01T00:00:00.000Z",
+      "isAvailable": false,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          9.0001,
+          45.0001
+        ]
+      },
+      "pricingDetails": {
+        "Unit": "kWh",
+        "BaseAmount": 0.48,
+        "BaseCurrency": "EUR",
+        "Price": "0.50",
+        "Currency": "EUR",
+        "evseId": "IT*TST*E1000*2",
+        "currentType": "AC",
+        "parkingPricing": {
+          "IsEnabled": false,
+          "IsParkingFeeEnabled": false,
+          "ParkingFee": 0.0,
+          "ParkingCap": 60,
+          "Currency": "EUR",
+          "exception": null,
+          "restrictions": null,
+          "MaxDurationInMinutes": 720,
+          "MaxFee": 20
+        },
+        "isDefault": false,
+        "PreAuthHoldAmount": 35,
+        "commissionPercent": 5,
+        "pricingByType": {
+          "TOKEN": {
+            "Price": "0.50",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          },
+          "CARD": {
+            "Price": "0.55",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          }
+        },
+        "costKwh": null
+      },
+      "status": "Occupied",
+      "updateKey": "TESTKEY",
+      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "Protocol": "HUBJECT",
+      "partner": null,
+      "monetization": true,
+      "distance": 300.0
+    },
+    {
+      "_id": "670000000000000000000002",
+      "EvseID": "IT*TST*E1001*1",
+      "EvseData": {
+        "EvseID": "IT*TST*E1001*1",
+        "ChargingStationID": null,
+        "HardwareManufacturer": null,
+        "ChargingStationImage": null,
+        "SubOperatorName": null,
+        "ChargingPoolID": null,
+        "Address": {
+          "Country": "ITA",
+          "City": "Testville",
+          "Street": "Via Test 2",
+          "PostalCode": "00000",
+          "HouseNum": "",
+          "Floor": null,
+          "Region": null,
+          "TimeZone": null,
+          "ParkingFacility": null,
+          "ParkingSpot": null
+        },
+        "GeoCoordinates": {
+          "Google": null,
+          "DecimalDegree": {
+            "Latitude": "45.000200",
+            "Longitude": "9.000200"
+          },
+          "DegreeMinuteSeconds": null
+        },
+        "Plugs": [
+          "Type2Outlet"
+        ],
+        "DynamicPowerLevel": null,
+        "ChargingFacilities": [
+          {
+            "PowerType": "AC_3_PHASE",
+            "Voltage": null,
+            "Amperage": null,
+            "Power": 22
+          }
+        ],
+        "RenewableEnergy": true,
+        "EnergySource": null,
+        "EnvironmentalImpact": null,
+        "AuthenticationModes": [
+          "REMOTE",
+          "NFC RFID Classic"
+        ],
+        "MaxCapacity": 22,
+        "PaymentOptions": [
+          "Contract"
+        ],
+        "ValueAddedServices": [
+          "Reservation"
+        ],
+        "Accessibility": "Free publicly accessible",
+        "AccessibilityLocation": null,
+        "HotlinePhoneNumber": null,
+        "AdditionalInfo": null,
+        "ChargingStationLocationReference": null,
+        "GeoChargingPointEntrance": null,
+        "IsOpen24Hours": true,
+        "HubOperatorID": null,
+        "ClearinghouseID": null,
+        "IsHubjectCompatible": true,
+        "DynamicInfoAvailable": "true",
+        "deltaType": "insert",
+        "lastUpdate": "2026-01-02T00:00:00+00:00",
+        "CalibrationLawDataAvailability": "Not Available",
+        "OperatorID": "IT*TST",
+        "OperatorName": "Test Charging Srl",
+        "ChargingStationNames": [
+          {
+            "lang": "it",
+            "value": "Test Station 1001"
+          }
+        ]
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "insertedAt": "2026-01-01T00:00:00.000Z",
+      "isAvailable": false,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          9.0002,
+          45.0002
+        ]
+      },
+      "pricingDetails": {
+        "Unit": "kWh",
+        "BaseAmount": 0.53,
+        "BaseCurrency": "EUR",
+        "Price": "0.55",
+        "Currency": "EUR",
+        "evseId": "IT*TST*E1001*1",
+        "currentType": "AC",
+        "parkingPricing": {
+          "IsEnabled": false,
+          "IsParkingFeeEnabled": false,
+          "ParkingFee": 0.0,
+          "ParkingCap": 60,
+          "Currency": "EUR",
+          "exception": null,
+          "restrictions": null,
+          "MaxDurationInMinutes": 720,
+          "MaxFee": 20
+        },
+        "isDefault": false,
+        "PreAuthHoldAmount": 35,
+        "commissionPercent": 5,
+        "pricingByType": {
+          "TOKEN": {
+            "Price": "0.55",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          },
+          "CARD": {
+            "Price": "0.60",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          }
+        },
+        "costKwh": null
+      },
+      "status": "OutOfService",
+      "updateKey": "TESTKEY",
+      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "Protocol": "HUBJECT",
+      "partner": null,
+      "monetization": true,
+      "distance": 450.0
+    },
+    {
+      "_id": "670000000000000000000003",
+      "EvseID": "IT*TST*E1001*2",
+      "EvseData": {
+        "EvseID": "IT*TST*E1001*2",
+        "ChargingStationID": null,
+        "HardwareManufacturer": null,
+        "ChargingStationImage": null,
+        "SubOperatorName": null,
+        "ChargingPoolID": null,
+        "Address": {
+          "Country": "ITA",
+          "City": "Testville",
+          "Street": "Via Test 3",
+          "PostalCode": "00000",
+          "HouseNum": "",
+          "Floor": null,
+          "Region": null,
+          "TimeZone": null,
+          "ParkingFacility": null,
+          "ParkingSpot": null
+        },
+        "GeoCoordinates": {
+          "Google": null,
+          "DecimalDegree": {
+            "Latitude": "45.000300",
+            "Longitude": "9.000300"
+          },
+          "DegreeMinuteSeconds": null
+        },
+        "Plugs": [
+          "Type2Outlet"
+        ],
+        "DynamicPowerLevel": null,
+        "ChargingFacilities": [
+          {
+            "PowerType": "AC_3_PHASE",
+            "Voltage": null,
+            "Amperage": null,
+            "Power": 22
+          }
+        ],
+        "RenewableEnergy": true,
+        "EnergySource": null,
+        "EnvironmentalImpact": null,
+        "AuthenticationModes": [
+          "REMOTE",
+          "NFC RFID Classic"
+        ],
+        "MaxCapacity": 22,
+        "PaymentOptions": [
+          "Contract"
+        ],
+        "ValueAddedServices": [
+          "Reservation"
+        ],
+        "Accessibility": "Free publicly accessible",
+        "AccessibilityLocation": null,
+        "HotlinePhoneNumber": null,
+        "AdditionalInfo": null,
+        "ChargingStationLocationReference": null,
+        "GeoChargingPointEntrance": null,
+        "IsOpen24Hours": true,
+        "HubOperatorID": null,
+        "ClearinghouseID": null,
+        "IsHubjectCompatible": true,
+        "DynamicInfoAvailable": "true",
+        "deltaType": "insert",
+        "lastUpdate": "2026-01-02T00:00:00+00:00",
+        "CalibrationLawDataAvailability": "Not Available",
+        "OperatorID": "IT*TST",
+        "OperatorName": "Test Charging Srl",
+        "ChargingStationNames": [
+          {
+            "lang": "it",
+            "value": "Test Station 1001"
+          }
+        ]
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "insertedAt": "2026-01-01T00:00:00.000Z",
+      "isAvailable": false,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          9.0003,
+          45.0003
+        ]
+      },
+      "pricingDetails": {
+        "Unit": "kWh",
+        "BaseAmount": 0.43,
+        "BaseCurrency": "EUR",
+        "Price": "0.45",
+        "Currency": "EUR",
+        "evseId": "IT*TST*E1001*2",
+        "currentType": "AC",
+        "parkingPricing": {
+          "IsEnabled": false,
+          "IsParkingFeeEnabled": false,
+          "ParkingFee": 0.0,
+          "ParkingCap": 60,
+          "Currency": "EUR",
+          "exception": null,
+          "restrictions": null,
+          "MaxDurationInMinutes": 720,
+          "MaxFee": 20
+        },
+        "isDefault": false,
+        "PreAuthHoldAmount": 35,
+        "commissionPercent": 5,
+        "pricingByType": {
+          "TOKEN": {
+            "Price": "0.45",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          },
+          "CARD": {
+            "Price": "0.50",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          }
+        },
+        "costKwh": null
+      },
+      "status": "Unknown",
+      "updateKey": "TESTKEY",
+      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "Protocol": "HUBJECT",
+      "partner": null,
+      "monetization": true,
+      "distance": 600.0
+    },
+    {
+      "_id": "670000000000000000000004",
+      "EvseID": "IT*TST*E1002*1",
+      "EvseData": {
+        "EvseID": "IT*TST*E1002*1",
+        "ChargingStationID": null,
+        "HardwareManufacturer": null,
+        "ChargingStationImage": null,
+        "SubOperatorName": null,
+        "ChargingPoolID": null,
+        "Address": {
+          "Country": "ITA",
+          "City": "Testville",
+          "Street": "Via Test 4",
+          "PostalCode": "00000",
+          "HouseNum": "",
+          "Floor": null,
+          "Region": null,
+          "TimeZone": null,
+          "ParkingFacility": null,
+          "ParkingSpot": null
+        },
+        "GeoCoordinates": {
+          "Google": null,
+          "DecimalDegree": {
+            "Latitude": "45.000400",
+            "Longitude": "9.000400"
+          },
+          "DegreeMinuteSeconds": null
+        },
+        "Plugs": [
+          "Type2Outlet"
+        ],
+        "DynamicPowerLevel": null,
+        "ChargingFacilities": [
+          {
+            "PowerType": "AC_3_PHASE",
+            "Voltage": null,
+            "Amperage": null,
+            "Power": 22
+          }
+        ],
+        "RenewableEnergy": true,
+        "EnergySource": null,
+        "EnvironmentalImpact": null,
+        "AuthenticationModes": [
+          "REMOTE",
+          "NFC RFID Classic"
+        ],
+        "MaxCapacity": 22,
+        "PaymentOptions": [
+          "Contract"
+        ],
+        "ValueAddedServices": [
+          "Reservation"
+        ],
+        "Accessibility": "Free publicly accessible",
+        "AccessibilityLocation": null,
+        "HotlinePhoneNumber": null,
+        "AdditionalInfo": null,
+        "ChargingStationLocationReference": null,
+        "GeoChargingPointEntrance": null,
+        "IsOpen24Hours": true,
+        "HubOperatorID": null,
+        "ClearinghouseID": null,
+        "IsHubjectCompatible": true,
+        "DynamicInfoAvailable": "true",
+        "deltaType": "insert",
+        "lastUpdate": "2026-01-02T00:00:00+00:00",
+        "CalibrationLawDataAvailability": "Not Available",
+        "OperatorID": "IT*TST",
+        "OperatorName": "Test Charging Srl",
+        "ChargingStationNames": [
+          {
+            "lang": "it",
+            "value": "Test Station 1002"
+          }
+        ]
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "insertedAt": "2026-01-01T00:00:00.000Z",
+      "isAvailable": false,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          9.0004,
+          45.0004
+        ]
+      },
+      "pricingDetails": {
+        "Unit": "kWh",
+        "BaseAmount": 0.48,
+        "BaseCurrency": "EUR",
+        "Price": "0.50",
+        "Currency": "EUR",
+        "evseId": "IT*TST*E1002*1",
+        "currentType": "AC",
+        "parkingPricing": {
+          "IsEnabled": false,
+          "IsParkingFeeEnabled": false,
+          "ParkingFee": 0.0,
+          "ParkingCap": 60,
+          "Currency": "EUR",
+          "exception": null,
+          "restrictions": null,
+          "MaxDurationInMinutes": 720,
+          "MaxFee": 20
+        },
+        "isDefault": false,
+        "PreAuthHoldAmount": 35,
+        "commissionPercent": 5,
+        "pricingByType": {
+          "TOKEN": {
+            "Price": "0.50",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          },
+          "CARD": {
+            "Price": "0.55",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          }
+        },
+        "costKwh": null
+      },
+      "status": "Available",
+      "updateKey": "TESTKEY",
+      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "Protocol": "HUBJECT",
+      "partner": null,
+      "monetization": true,
+      "distance": 750.0
+    },
+    {
+      "_id": "670000000000000000000005",
+      "EvseID": "IT*TST*E1002*2",
+      "EvseData": {
+        "EvseID": "IT*TST*E1002*2",
+        "ChargingStationID": null,
+        "HardwareManufacturer": null,
+        "ChargingStationImage": null,
+        "SubOperatorName": null,
+        "ChargingPoolID": null,
+        "Address": {
+          "Country": "ITA",
+          "City": "Testville",
+          "Street": "Via Test 5",
+          "PostalCode": "00000",
+          "HouseNum": "",
+          "Floor": null,
+          "Region": null,
+          "TimeZone": null,
+          "ParkingFacility": null,
+          "ParkingSpot": null
+        },
+        "GeoCoordinates": {
+          "Google": null,
+          "DecimalDegree": {
+            "Latitude": "45.000500",
+            "Longitude": "9.000500"
+          },
+          "DegreeMinuteSeconds": null
+        },
+        "Plugs": [
+          "Type2Outlet"
+        ],
+        "DynamicPowerLevel": null,
+        "ChargingFacilities": [
+          {
+            "PowerType": "AC_3_PHASE",
+            "Voltage": null,
+            "Amperage": null,
+            "Power": 22
+          }
+        ],
+        "RenewableEnergy": true,
+        "EnergySource": null,
+        "EnvironmentalImpact": null,
+        "AuthenticationModes": [
+          "REMOTE",
+          "NFC RFID Classic"
+        ],
+        "MaxCapacity": 22,
+        "PaymentOptions": [
+          "Contract"
+        ],
+        "ValueAddedServices": [
+          "Reservation"
+        ],
+        "Accessibility": "Free publicly accessible",
+        "AccessibilityLocation": null,
+        "HotlinePhoneNumber": null,
+        "AdditionalInfo": null,
+        "ChargingStationLocationReference": null,
+        "GeoChargingPointEntrance": null,
+        "IsOpen24Hours": true,
+        "HubOperatorID": null,
+        "ClearinghouseID": null,
+        "IsHubjectCompatible": true,
+        "DynamicInfoAvailable": "true",
+        "deltaType": "insert",
+        "lastUpdate": "2026-01-02T00:00:00+00:00",
+        "CalibrationLawDataAvailability": "Not Available",
+        "OperatorID": "IT*TST",
+        "OperatorName": "Test Charging Srl",
+        "ChargingStationNames": [
+          {
+            "lang": "it",
+            "value": "Test Station 1002"
+          }
+        ]
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "insertedAt": "2026-01-01T00:00:00.000Z",
+      "isAvailable": false,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          9.0005,
+          45.0005
+        ]
+      },
+      "pricingDetails": {
+        "Unit": "kWh",
+        "BaseAmount": 0.53,
+        "BaseCurrency": "EUR",
+        "Price": "0.55",
+        "Currency": "EUR",
+        "evseId": "IT*TST*E1002*2",
+        "currentType": "AC",
+        "parkingPricing": {
+          "IsEnabled": false,
+          "IsParkingFeeEnabled": false,
+          "ParkingFee": 0.0,
+          "ParkingCap": 60,
+          "Currency": "EUR",
+          "exception": null,
+          "restrictions": null,
+          "MaxDurationInMinutes": 720,
+          "MaxFee": 20
+        },
+        "isDefault": false,
+        "PreAuthHoldAmount": 35,
+        "commissionPercent": 5,
+        "pricingByType": {
+          "TOKEN": {
+            "Price": "0.55",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          },
+          "CARD": {
+            "Price": "0.60",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          }
+        },
+        "costKwh": null
+      },
+      "status": "Occupied",
+      "updateKey": "TESTKEY",
+      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "Protocol": "HUBJECT",
+      "partner": null,
+      "monetization": true,
+      "distance": 900.0
+    },
+    {
+      "_id": "670000000000000000000006",
+      "EvseID": "IT*TST*E1003*1",
+      "EvseData": {
+        "EvseID": "IT*TST*E1003*1",
+        "ChargingStationID": null,
+        "HardwareManufacturer": null,
+        "ChargingStationImage": null,
+        "SubOperatorName": null,
+        "ChargingPoolID": null,
+        "Address": {
+          "Country": "ITA",
+          "City": "Testville",
+          "Street": "Via Test 6",
+          "PostalCode": "00000",
+          "HouseNum": "",
+          "Floor": null,
+          "Region": null,
+          "TimeZone": null,
+          "ParkingFacility": null,
+          "ParkingSpot": null
+        },
+        "GeoCoordinates": {
+          "Google": null,
+          "DecimalDegree": {
+            "Latitude": "45.000600",
+            "Longitude": "9.000600"
+          },
+          "DegreeMinuteSeconds": null
+        },
+        "Plugs": [
+          "Type2Outlet"
+        ],
+        "DynamicPowerLevel": null,
+        "ChargingFacilities": [
+          {
+            "PowerType": "AC_3_PHASE",
+            "Voltage": null,
+            "Amperage": null,
+            "Power": 22
+          }
+        ],
+        "RenewableEnergy": true,
+        "EnergySource": null,
+        "EnvironmentalImpact": null,
+        "AuthenticationModes": [
+          "REMOTE",
+          "NFC RFID Classic"
+        ],
+        "MaxCapacity": 22,
+        "PaymentOptions": [
+          "Contract"
+        ],
+        "ValueAddedServices": [
+          "Reservation"
+        ],
+        "Accessibility": "Free publicly accessible",
+        "AccessibilityLocation": null,
+        "HotlinePhoneNumber": null,
+        "AdditionalInfo": null,
+        "ChargingStationLocationReference": null,
+        "GeoChargingPointEntrance": null,
+        "IsOpen24Hours": true,
+        "HubOperatorID": null,
+        "ClearinghouseID": null,
+        "IsHubjectCompatible": true,
+        "DynamicInfoAvailable": "true",
+        "deltaType": "insert",
+        "lastUpdate": "2026-01-02T00:00:00+00:00",
+        "CalibrationLawDataAvailability": "Not Available",
+        "OperatorID": "IT*TST",
+        "OperatorName": "Test Charging Srl",
+        "ChargingStationNames": [
+          {
+            "lang": "it",
+            "value": "Test Station 1003"
+          }
+        ]
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "insertedAt": "2026-01-01T00:00:00.000Z",
+      "isAvailable": false,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          9.0006,
+          45.0006
+        ]
+      },
+      "pricingDetails": {
+        "Unit": "kWh",
+        "BaseAmount": 0.43,
+        "BaseCurrency": "EUR",
+        "Price": "0.45",
+        "Currency": "EUR",
+        "evseId": "IT*TST*E1003*1",
+        "currentType": "AC",
+        "parkingPricing": {
+          "IsEnabled": false,
+          "IsParkingFeeEnabled": false,
+          "ParkingFee": 0.0,
+          "ParkingCap": 60,
+          "Currency": "EUR",
+          "exception": null,
+          "restrictions": null,
+          "MaxDurationInMinutes": 720,
+          "MaxFee": 20
+        },
+        "isDefault": false,
+        "PreAuthHoldAmount": 35,
+        "commissionPercent": 5,
+        "pricingByType": {
+          "TOKEN": {
+            "Price": "0.45",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          },
+          "CARD": {
+            "Price": "0.50",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          }
+        },
+        "costKwh": null
+      },
+      "status": "OutOfService",
+      "updateKey": "TESTKEY",
+      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "Protocol": "HUBJECT",
+      "partner": null,
+      "monetization": true,
+      "distance": 1050.0
+    },
+    {
+      "_id": "670000000000000000000007",
+      "EvseID": "IT*TST*E1003*2",
+      "EvseData": {
+        "EvseID": "IT*TST*E1003*2",
+        "ChargingStationID": null,
+        "HardwareManufacturer": null,
+        "ChargingStationImage": null,
+        "SubOperatorName": null,
+        "ChargingPoolID": null,
+        "Address": {
+          "Country": "ITA",
+          "City": "Testville",
+          "Street": "Via Test 7",
+          "PostalCode": "00000",
+          "HouseNum": "",
+          "Floor": null,
+          "Region": null,
+          "TimeZone": null,
+          "ParkingFacility": null,
+          "ParkingSpot": null
+        },
+        "GeoCoordinates": {
+          "Google": null,
+          "DecimalDegree": {
+            "Latitude": "45.000700",
+            "Longitude": "9.000700"
+          },
+          "DegreeMinuteSeconds": null
+        },
+        "Plugs": [
+          "Type2Outlet"
+        ],
+        "DynamicPowerLevel": null,
+        "ChargingFacilities": [
+          {
+            "PowerType": "AC_3_PHASE",
+            "Voltage": null,
+            "Amperage": null,
+            "Power": 22
+          }
+        ],
+        "RenewableEnergy": true,
+        "EnergySource": null,
+        "EnvironmentalImpact": null,
+        "AuthenticationModes": [
+          "REMOTE",
+          "NFC RFID Classic"
+        ],
+        "MaxCapacity": 22,
+        "PaymentOptions": [
+          "Contract"
+        ],
+        "ValueAddedServices": [
+          "Reservation"
+        ],
+        "Accessibility": "Free publicly accessible",
+        "AccessibilityLocation": null,
+        "HotlinePhoneNumber": null,
+        "AdditionalInfo": null,
+        "ChargingStationLocationReference": null,
+        "GeoChargingPointEntrance": null,
+        "IsOpen24Hours": true,
+        "HubOperatorID": null,
+        "ClearinghouseID": null,
+        "IsHubjectCompatible": true,
+        "DynamicInfoAvailable": "true",
+        "deltaType": "insert",
+        "lastUpdate": "2026-01-02T00:00:00+00:00",
+        "CalibrationLawDataAvailability": "Not Available",
+        "OperatorID": "IT*TST",
+        "OperatorName": "Test Charging Srl",
+        "ChargingStationNames": [
+          {
+            "lang": "it",
+            "value": "Test Station 1003"
+          }
+        ]
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "insertedAt": "2026-01-01T00:00:00.000Z",
+      "isAvailable": false,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          9.0007,
+          45.0007
+        ]
+      },
+      "pricingDetails": {
+        "Unit": "kWh",
+        "BaseAmount": 0.48,
+        "BaseCurrency": "EUR",
+        "Price": "0.50",
+        "Currency": "EUR",
+        "evseId": "IT*TST*E1003*2",
+        "currentType": "AC",
+        "parkingPricing": {
+          "IsEnabled": false,
+          "IsParkingFeeEnabled": false,
+          "ParkingFee": 0.0,
+          "ParkingCap": 60,
+          "Currency": "EUR",
+          "exception": null,
+          "restrictions": null,
+          "MaxDurationInMinutes": 720,
+          "MaxFee": 20
+        },
+        "isDefault": false,
+        "PreAuthHoldAmount": 35,
+        "commissionPercent": 5,
+        "pricingByType": {
+          "TOKEN": {
+            "Price": "0.50",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          },
+          "CARD": {
+            "Price": "0.55",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          }
+        },
+        "costKwh": null
+      },
+      "status": "Unknown",
+      "updateKey": "TESTKEY",
+      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "Protocol": "HUBJECT",
+      "partner": null,
+      "monetization": true,
+      "distance": 1200.0
+    },
+    {
+      "_id": "670000000000000000000008",
+      "EvseID": "IT*TST*E1004*1",
+      "EvseData": {
+        "EvseID": "IT*TST*E1004*1",
+        "ChargingStationID": null,
+        "HardwareManufacturer": null,
+        "ChargingStationImage": null,
+        "SubOperatorName": null,
+        "ChargingPoolID": null,
+        "Address": {
+          "Country": "ITA",
+          "City": "Testville",
+          "Street": "Via Test 8",
+          "PostalCode": "00000",
+          "HouseNum": "",
+          "Floor": null,
+          "Region": null,
+          "TimeZone": null,
+          "ParkingFacility": null,
+          "ParkingSpot": null
+        },
+        "GeoCoordinates": {
+          "Google": null,
+          "DecimalDegree": {
+            "Latitude": "45.000800",
+            "Longitude": "9.000800"
+          },
+          "DegreeMinuteSeconds": null
+        },
+        "Plugs": [
+          "Type2Outlet"
+        ],
+        "DynamicPowerLevel": null,
+        "ChargingFacilities": [
+          {
+            "PowerType": "AC_3_PHASE",
+            "Voltage": null,
+            "Amperage": null,
+            "Power": 22
+          }
+        ],
+        "RenewableEnergy": true,
+        "EnergySource": null,
+        "EnvironmentalImpact": null,
+        "AuthenticationModes": [
+          "REMOTE",
+          "NFC RFID Classic"
+        ],
+        "MaxCapacity": 22,
+        "PaymentOptions": [
+          "Contract"
+        ],
+        "ValueAddedServices": [
+          "Reservation"
+        ],
+        "Accessibility": "Free publicly accessible",
+        "AccessibilityLocation": null,
+        "HotlinePhoneNumber": null,
+        "AdditionalInfo": null,
+        "ChargingStationLocationReference": null,
+        "GeoChargingPointEntrance": null,
+        "IsOpen24Hours": true,
+        "HubOperatorID": null,
+        "ClearinghouseID": null,
+        "IsHubjectCompatible": true,
+        "DynamicInfoAvailable": "true",
+        "deltaType": "insert",
+        "lastUpdate": "2026-01-02T00:00:00+00:00",
+        "CalibrationLawDataAvailability": "Not Available",
+        "OperatorID": "IT*TST",
+        "OperatorName": "Test Charging Srl",
+        "ChargingStationNames": [
+          {
+            "lang": "it",
+            "value": "Test Station 1004"
+          }
+        ]
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "insertedAt": "2026-01-01T00:00:00.000Z",
+      "isAvailable": false,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          9.0008,
+          45.0008
+        ]
+      },
+      "pricingDetails": {
+        "Unit": "kWh",
+        "BaseAmount": 0.53,
+        "BaseCurrency": "EUR",
+        "Price": "0.55",
+        "Currency": "EUR",
+        "evseId": "IT*TST*E1004*1",
+        "currentType": "AC",
+        "parkingPricing": {
+          "IsEnabled": false,
+          "IsParkingFeeEnabled": false,
+          "ParkingFee": 0.0,
+          "ParkingCap": 60,
+          "Currency": "EUR",
+          "exception": null,
+          "restrictions": null,
+          "MaxDurationInMinutes": 720,
+          "MaxFee": 20
+        },
+        "isDefault": false,
+        "PreAuthHoldAmount": 35,
+        "commissionPercent": 5,
+        "pricingByType": {
+          "TOKEN": {
+            "Price": "0.55",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          },
+          "CARD": {
+            "Price": "0.60",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          }
+        },
+        "costKwh": null
+      },
+      "status": "Available",
+      "updateKey": "TESTKEY",
+      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "Protocol": "HUBJECT",
+      "partner": null,
+      "monetization": true,
+      "distance": 1350.0
+    },
+    {
+      "_id": "670000000000000000000009",
+      "EvseID": "IT*TST*E1004*2",
+      "EvseData": {
+        "EvseID": "IT*TST*E1004*2",
+        "ChargingStationID": null,
+        "HardwareManufacturer": null,
+        "ChargingStationImage": null,
+        "SubOperatorName": null,
+        "ChargingPoolID": null,
+        "Address": {
+          "Country": "ITA",
+          "City": "Testville",
+          "Street": "Via Test 9",
+          "PostalCode": "00000",
+          "HouseNum": "",
+          "Floor": null,
+          "Region": null,
+          "TimeZone": null,
+          "ParkingFacility": null,
+          "ParkingSpot": null
+        },
+        "GeoCoordinates": {
+          "Google": null,
+          "DecimalDegree": {
+            "Latitude": "45.000900",
+            "Longitude": "9.000900"
+          },
+          "DegreeMinuteSeconds": null
+        },
+        "Plugs": [
+          "Type2Outlet"
+        ],
+        "DynamicPowerLevel": null,
+        "ChargingFacilities": [
+          {
+            "PowerType": "DC",
+            "Voltage": null,
+            "Amperage": null,
+            "Power": 150
+          }
+        ],
+        "RenewableEnergy": true,
+        "EnergySource": null,
+        "EnvironmentalImpact": null,
+        "AuthenticationModes": [
+          "REMOTE",
+          "NFC RFID Classic"
+        ],
+        "MaxCapacity": 22,
+        "PaymentOptions": [
+          "Contract"
+        ],
+        "ValueAddedServices": [
+          "Reservation"
+        ],
+        "Accessibility": "Free publicly accessible",
+        "AccessibilityLocation": null,
+        "HotlinePhoneNumber": null,
+        "AdditionalInfo": null,
+        "ChargingStationLocationReference": null,
+        "GeoChargingPointEntrance": null,
+        "IsOpen24Hours": true,
+        "HubOperatorID": null,
+        "ClearinghouseID": null,
+        "IsHubjectCompatible": true,
+        "DynamicInfoAvailable": "true",
+        "deltaType": "insert",
+        "lastUpdate": "2026-01-02T00:00:00+00:00",
+        "CalibrationLawDataAvailability": "Not Available",
+        "OperatorID": "IT*TST",
+        "OperatorName": "Test Charging Srl",
+        "ChargingStationNames": [
+          {
+            "lang": "it",
+            "value": "Test Station 1004"
+          }
+        ]
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "insertedAt": "2026-01-01T00:00:00.000Z",
+      "isAvailable": false,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          9.0009,
+          45.0009
+        ]
+      },
+      "pricingDetails": {
+        "Unit": "kWh",
+        "BaseAmount": 0.43,
+        "BaseCurrency": "EUR",
+        "Price": "0.45",
+        "Currency": "EUR",
+        "evseId": "IT*TST*E1004*2",
+        "currentType": "DC",
+        "parkingPricing": {
+          "IsEnabled": false,
+          "IsParkingFeeEnabled": false,
+          "ParkingFee": 0.0,
+          "ParkingCap": 60,
+          "Currency": "EUR",
+          "exception": null,
+          "restrictions": null,
+          "MaxDurationInMinutes": 720,
+          "MaxFee": 20
+        },
+        "isDefault": false,
+        "PreAuthHoldAmount": 35,
+        "commissionPercent": 5,
+        "pricingByType": {
+          "TOKEN": {
+            "Price": "0.45",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          },
+          "CARD": {
+            "Price": "0.50",
+            "CommissionPercent": 0,
+            "restrictions": null,
+            "minPrice": null,
+            "maxPrice": null
+          }
+        },
+        "costKwh": null
+      },
+      "status": "Occupied",
+      "updateKey": "TESTKEY",
+      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "Protocol": "HUBJECT",
+      "partner": null,
+      "monetization": true,
+      "distance": 1500.0
+    }
+  ]
+}
