@@ -1,0 +1,188 @@
+{
+  "page": 1,
+  "limit": 2,
+  "totalPages": 2,
+  "totalDocuments": 3,
+  "data": [
+    {
+      "_id": "660000000000000000000001",
+      "sessionId": "00000000-0000-4000-8000-000000000001",
+      "evseId": "IT*TST*E0001*1",
+      "invoiceNo": "INV-TEST-0001",
+      "createdAt": "2026-01-11T18:30:00.000Z",
+      "amount": 10.86,
+      "currency": "EUR",
+      "consumedEnergy": 18.4,
+      "operator": "Test Charging Srl",
+      "company": null,
+      "location": null,
+      "time": null,
+      "pricingDetails": {
+        "Price": 0.59,
+        "Unit": "KWH",
+        "Currency": "EUR",
+        "consumedEnergy": 18.4
+      },
+      "timeDetails": {
+        "durationInMinutes": 95,
+        "timeFee": 0
+      },
+      "parkingDetails": {
+        "durationInMinutes": 0,
+        "parkingFee": 0
+      },
+      "timeSurchargeDurationInMinutes": 0,
+      "timeSurchargeFee": 0,
+      "evseDetails": {
+        "address": {
+          "Street": "Via Roma 1",
+          "City": "Milano",
+          "PostalCode": "20100",
+          "Region": "Lombardia",
+          "State": null,
+          "Country": "ITA"
+        }
+      },
+      "chargingStation": {
+        "_id": "650000000000000000000001",
+        "EvseID": "IT*TST*E0001*1",
+        "partner": "TestPartner",
+        "EvseData": {
+          "EvseID": "IT*TST*E0001*1",
+          "OperatorName": "Test Charging Srl",
+          "OperatorID": "IT*TST",
+          "Address": {
+            "Street": "Via Roma 1",
+            "City": "Milano",
+            "PostalCode": "20100",
+            "Region": "Lombardia",
+            "State": null,
+            "Country": "ITA"
+          },
+          "GeoCoordinates": {
+            "DecimalDegree": {
+              "Latitude": "45.4642",
+              "Longitude": "9.1900"
+            }
+          },
+          "ChargingFacilities": [
+            {
+              "Power": 22,
+              "PowerType": "AC_3_PHASE",
+              "Voltage": 400,
+              "Amperage": 32
+            }
+          ],
+          "Plugs": [
+            "Type2Outlet"
+          ]
+        },
+        "pricing": {
+          "Price": 0.59,
+          "Unit": "KWH",
+          "Currency": "EUR",
+          "restrictions": [],
+          "flatPricing": {
+            "IsEnabled": false
+          },
+          "parkingPricing": {
+            "IsEnabled": false
+          },
+          "timePricing": {
+            "IsEnabled": false
+          }
+        }
+      }
+    },
+    {
+      "_id": "660000000000000000000002",
+      "sessionId": "00000000-0000-4000-8000-000000000002",
+      "evseId": "IT*TST*E0001*1",
+      "invoiceNo": "INV-TEST-0002",
+      "createdAt": "2026-01-12T18:30:00.000Z",
+      "amount": 4.28,
+      "currency": "EUR",
+      "consumedEnergy": 7.25,
+      "operator": "Test Charging Srl",
+      "company": null,
+      "location": null,
+      "time": null,
+      "pricingDetails": {
+        "Price": 0.59,
+        "Unit": "KWH",
+        "Currency": "EUR",
+        "consumedEnergy": 7.25
+      },
+      "timeDetails": {
+        "durationInMinutes": 95,
+        "timeFee": 0
+      },
+      "parkingDetails": {
+        "durationInMinutes": 0,
+        "parkingFee": 0
+      },
+      "timeSurchargeDurationInMinutes": 0,
+      "timeSurchargeFee": 0,
+      "evseDetails": {
+        "address": {
+          "Street": "Via Roma 1",
+          "City": "Milano",
+          "PostalCode": "20100",
+          "Region": "Lombardia",
+          "State": null,
+          "Country": "ITA"
+        }
+      },
+      "chargingStation": {
+        "_id": "650000000000000000000001",
+        "EvseID": "IT*TST*E0001*1",
+        "partner": "TestPartner",
+        "EvseData": {
+          "EvseID": "IT*TST*E0001*1",
+          "OperatorName": "Test Charging Srl",
+          "OperatorID": "IT*TST",
+          "Address": {
+            "Street": "Via Roma 1",
+            "City": "Milano",
+            "PostalCode": "20100",
+            "Region": "Lombardia",
+            "State": null,
+            "Country": "ITA"
+          },
+          "GeoCoordinates": {
+            "DecimalDegree": {
+              "Latitude": "45.4642",
+              "Longitude": "9.1900"
+            }
+          },
+          "ChargingFacilities": [
+            {
+              "Power": 22,
+              "PowerType": "AC_3_PHASE",
+              "Voltage": 400,
+              "Amperage": 32
+            }
+          ],
+          "Plugs": [
+            "Type2Outlet"
+          ]
+        },
+        "pricing": {
+          "Price": 0.59,
+          "Unit": "KWH",
+          "Currency": "EUR",
+          "restrictions": [],
+          "flatPricing": {
+            "IsEnabled": false
+          },
+          "parkingPricing": {
+            "IsEnabled": false
+          },
+          "timePricing": {
+            "IsEnabled": false
+          }
+        }
+      }
+    }
+  ]
+}

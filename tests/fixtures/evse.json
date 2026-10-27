@@ -1,0 +1,50 @@
+{
+  "_id": "650000000000000000000001",
+  "EvseID": "IT*TST*E0001*1",
+  "partner": "TestPartner",
+  "EvseData": {
+    "EvseID": "IT*TST*E0001*1",
+    "OperatorName": "Test Charging Srl",
+    "OperatorID": "IT*TST",
+    "Address": {
+      "Street": "Via Roma 1",
+      "City": "Milano",
+      "PostalCode": "20100",
+      "Region": "Lombardia",
+      "State": null,
+      "Country": "ITA"
+    },
+    "GeoCoordinates": {
+      "DecimalDegree": {
+        "Latitude": "45.4642",
+        "Longitude": "9.1900"
+      }
+    },
+    "ChargingFacilities": [
+      {
+        "Power": 22,
+        "PowerType": "AC_3_PHASE",
+        "Voltage": 400,
+        "Amperage": 32
+      }
+    ],
+    "Plugs": [
+      "Type2Outlet"
+    ]
+  },
+  "pricing": {
+    "Price": 0.59,
+    "Unit": "KWH",
+    "Currency": "EUR",
+    "restrictions": [],
+    "flatPricing": {
+      "IsEnabled": false
+    },
+    "parkingPricing": {
+      "IsEnabled": false
+    },
+    "timePricing": {
+      "IsEnabled": false
+    }
+  }
+}

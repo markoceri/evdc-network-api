@@ -1,0 +1,11 @@
+[
+  {
+    "sessionId": "00000000-0000-4000-8000-0000000000aa",
+    "evseId": "IT*TST*E0001*1",
+    "amount": 50,
+    "currency": "EUR",
+    "createdAt": "2026-01-20T08:00:00.000Z",
+    "isPaid": false,
+    "isStop": false
+  }
+]

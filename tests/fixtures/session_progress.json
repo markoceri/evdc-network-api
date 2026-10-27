@@ -1,0 +1,21 @@
+{
+  "EvseID": "IT*TST*E0001*1",
+  "SessionStart": "2026-01-20T08:00:00Z",
+  "ChargingStart": "2026-01-20T08:00:30Z",
+  "Time": "2026-01-20T08:15:00Z",
+  "Power": 21.6,
+  "MaxPower": 22,
+  "Current": 31.2,
+  "MaxCurrent": 32,
+  "EnergyImport": 5.4,
+  "EnergyExport": 0,
+  "ConsumedEnergyProgress": 5.4,
+  "ParkingTime": null,
+  "ReservationTime": null,
+  "Timeline": [
+    {
+      "Time": "2026-01-20T08:10:00Z",
+      "Power": 21.0
+    }
+  ]
+}
