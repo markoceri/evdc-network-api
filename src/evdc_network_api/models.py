@@ -289,6 +289,13 @@ class ChargingSession:
     ended_at: datetime | None = None
     amount: float | None = None
     currency: str | None = None
+    """What left the wallet (``amount`` in ``currency``); for a token-paid session this is in tokens, not money."""
+    cost: float | None = None
+    cost_currency: str | None = None
+    """The session's price in real money (``pricingDetails.chargingPrice`` / ``Currency``), whatever the wallet paid
+    with. Use this for cost tracking; for a EUR-paid session it equals ``amount``."""
+    token_conversion_rate: float | None = None
+    """Tokens per one unit of ``cost_currency`` (``amount`` ≈ ``cost`` × this); ``1`` for a money-paid session."""
     energy_kwh: float | None = None
     operator: str | None = None
     is_paid: bool | None = None
@@ -325,6 +332,9 @@ class ChargingSession:
             ended_at=_datetime(notifications.get("chargingEnd") or notifications.get("sessionEnd")),
             amount=_float(data.get("amount")),
             currency=_str(data.get("currency")),
+            cost=_float(pricing.get("chargingPrice")),
+            cost_currency=_str(pricing.get("Currency")),
+            token_conversion_rate=_float(pricing.get("tokenConversionRate")),
             energy_kwh=_float(energy if energy is not None else pricing.get("consumedEnergy")),
             operator=_str(data.get("operator")),
             is_paid=_bool(data.get("isPaid")),
