@@ -416,31 +416,48 @@ class OngoingSession:
 
 @dataclass(slots=True)
 class ConnectedSession:
-    """A logged-in session / device on the account (``/api/user-sessions``).
+    """A logged-in session / device on the account (``/api/user-sessions``, verified).
 
-    ``id`` is what identifies a session for revocation. ``is_current`` marks the session making the request.
-    Fields are reconstructed from the app (the devices screen) and not yet confirmed on a real response.
+    ``id`` identifies a session for revocation, ``device_id`` is the ``x-device-id`` that created it, and
+    ``is_current`` marks the session making the request. A session is created per device id, so a stable device id
+    yields one session per client. ``expires_at`` is when the refresh token behind the session lapses.
     """
 
     id: str | None
+    device_id: str | None = None
     device_model: str | None = None
+    app_version: str | None = None
     ip: str | None = None
     city: str | None = None
     country: str | None = None
+    timezone: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    status: str | None = None
     is_current: bool | None = None
     created_at: datetime | None = None
+    expires_at: datetime | None = None
+    user_id: str | None = None
     raw: dict[str, Any] = field(default_factory=dict, repr=False)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ConnectedSession:
         return cls(
             id=_str(data.get("_id") or data.get("id")),
+            device_id=_str(data.get("deviceId")),
             device_model=_str(data.get("deviceModel")),
+            app_version=_str(data.get("appVersion")),
             ip=_str(data.get("ip")),
             city=_str(data.get("city")),
             country=_str(data.get("country")),
+            timezone=_str(data.get("timezone")),
+            latitude=_float(data.get("latitude")),
+            longitude=_float(data.get("longitude")),
+            status=_str(data.get("status")),
             is_current=_bool(data.get("isCurrent")),
             created_at=_datetime(data.get("createdAt")),
+            expires_at=_datetime(data.get("expiresAt")),
+            user_id=_str(data.get("user")),
             raw=data,
         )
 
