@@ -82,6 +82,30 @@ with EvdcApiClient(email="you@example.com", password="...") as client:
     receipt = client.get_receipt(session_id)  # PDF bytes in receipt.content
 ```
 
+Charging points around a position (for example the vehicle's), nearest first, with live status and prices:
+
+```python
+for evse in client.find_stations_near(45.4642, 9.1900, radius_m=1000):
+    p = evse.pricing
+    print(
+        f"{evse.distance_m:.0f} m",
+        evse.operator_name,
+        evse.status,
+        evse.max_power_kw,
+        "kW",
+        p.price,
+        p.currency,
+        "/",
+        p.unit,
+        "(card:",
+        p.card_price,
+        ")",
+    )
+```
+
+Each result is one connector (EVSE). All the connectors within the radius are returned; pass `max_results` to
+stop earlier. Search one position at a time with a local radius: sweeping an area is out of the project's scope.
+
 The client logs in on the first call and refreshes the access token by itself. To avoid a new login at every start,
 persist the tokens and the device id:
 
@@ -89,7 +113,7 @@ persist the tokens and the device id:
 client = EvdcApiClient(
     email="you@example.com",
     password="...",
-    device_id=saved_device_id,          # stable 64-hex id
+    device_id=saved_device_id,  # stable 64-hex id
     access_token=saved_access_token,
     refresh_token=saved_refresh_token,
     on_tokens_updated=lambda access, refresh: save(access, refresh),

@@ -161,11 +161,34 @@ are **to be confirmed** with a capture.
 
 Only reading the user's own session is in scope. Remote start/stop and connector unlock are not.
 
-## Stations (to interpret sessions)
+## Stations
 
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/api/hubject/{evseId}` | Single EVSE details (schema TBD) |
+| GET | `/api/hubject/nearby/{longitude}/{latitude}?page=&pageSize=` | Charging points around one point, **verified** |
+
+### Nearby charging points — `GET /api/hubject/nearby/{longitude}/{latitude}`
+
+Used by the app's "near me" list. **Verified on 2026-10-27.**
+
+- **Longitude first** in the path (GeoJSON order). With the values swapped the search runs around a different point
+  and returns far-away results, so the order matters.
+- Query: `page` (1-based) and `pageSize`, both to be sent: without `pageSize` the backend fails with HTTP 500
+  (`invalid argument to $limit stage`), as it has no default. The app asks for 5 per page; the backend honours
+  larger pages (verified up to 200, with consistent pagination), and `find_stations_near` reads 50 at a time.
+- No radius, bounding box or filter parameter: results come **sorted by distance**, nearest first. A radius is
+  applied by the client, by stopping at the first item farther than it.
+- Response: `{ "result": [ …Evse… ] }`, no pagination counters; a page shorter than `pageSize` is the last one.
+- Each item is **one EVSE (connector)**, so a station with two sockets appears twice (`…*1`, `…*2`). Items carry
+  `distance` (metres from the point), `status` and `pricingDetails`, so prices need no extra request.
+- Data quality: a few records have latitude and longitude swapped in `EvseData.GeoCoordinates` and in `location`.
+  The search compares the query against `location`, so those stations never show up around their real position.
+
+Search **one point at a time**, as the app does. Sweeping an area with many points, or the bulk endpoints
+(`/api/hubject/stations/by-ip-location`, `/api/hubject/sync/evse`), is out of scope. `find_stations_near` reads
+pages until the radius is exceeded (optionally until `max_results`), so the radius bounds the number of requests;
+it also stops if a page brings nothing new.
 
 ## Data models (inferred)
 
@@ -291,33 +314,46 @@ See [Real-time session progress](#real-time-session-progress-socketio). Fields: 
 `ChargingStart`, `Time`, `Power`, `MaxPower`, `Current`, `MaxCurrent`, `EnergyImport`, `EnergyExport`,
 `ConsumedEnergyProgress`, `ParkingTime`, `ReservationTime`, `Timeline[]`.
 
-### Evse — station (`GET /api/hubject/{evseId}`, embedded as `chargingStation`)
+### Evse — charging point (nearby search **confirmed**; `GET /api/hubject/{evseId}` and `chargingStation` inferred)
+
+Fields as returned by the nearby search. The station part is the Hubject OICP `EvseDataRecord`.
 
 | Field | Type | Notes |
 |---|---|---|
 | `_id` | str | |
-| `EvseID` | str | OICP EVSE ID |
-| `partner` | str | Roaming partner / CPO source |
-| `EvseData.OperatorName` | str | |
-| `EvseData.OperatorID` | str | From the offline DB schema |
-| `EvseData.Address` | object | `Street`, `City`, `PostalCode`, `Region`, `State`, `Country` |
-| `EvseData.GeoCoordinates.DecimalDegree` | object | `Latitude`, `Longitude` |
-| `EvseData.ChargingFacilities[]` | object | `Power` (kW), `PowerType` (AC/DC), `Voltage`, `Amperage` |
+| `EvseID` | str | OICP EVSE ID, e.g. `IT*ABC*E123*1` (one connector) |
+| `status` | str | `Available`, `Occupied`, `OutOfService`, `Unknown` |
+| `isAvailable` | bool | Not consistent with `status` (false even when `Available`); prefer `status` |
+| `distance` | number | Metres from the searched point (nearby search only) |
+| `location` | GeoJSON Point | `coordinates: [lng, lat]` |
+| `partner`, `Protocol` | str\|null | e.g. `HUBJECT` |
+| `pricingDetails` | Pricing | Current tariff |
+| `EvseData.OperatorID`, `EvseData.OperatorName` | str | |
+| `EvseData.ChargingStationNames[]` | object | `{lang, value}` |
+| `EvseData.Address` | object | `Street`, `HouseNum`, `City`, `PostalCode`, `Region`, `Country` (ISO alpha-3), … |
+| `EvseData.GeoCoordinates.DecimalDegree` | object | `Latitude`, `Longitude` as strings |
+| `EvseData.ChargingFacilities[]` | object | `Power` (kW), `PowerType` (`AC_1_PHASE`, `AC_3_PHASE`, `DC`), `Voltage`, `Amperage` |
 | `EvseData.Plugs[]` | str | Connector types |
-| `pricing` / `pricingDetails` | Pricing | |
+| `EvseData.AuthenticationModes[]`, `PaymentOptions[]`, `ValueAddedServices[]` | str | OICP enums |
+| `EvseData.IsOpen24Hours`, `RenewableEnergy` | bool | |
 
 ### Pricing (tariff)
 
+The fields up to `parkingPricing` are **confirmed** on the nearby search; the rest come from the app.
+
 | Field | Type | Notes |
 |---|---|---|
-| `Price` | number | Energy price |
-| `Unit` | str | Price unit (e.g. per kWh) |
+| `Price` | str (number) | Energy price paid with the EVDC wallet/tokens (= `pricingByType.TOKEN.Price`) |
+| `Unit` | str | `kWh`; `DEFAULT` seen on some tariffs |
 | `Currency` | str | |
+| `BaseAmount`, `BaseCurrency`, `costKwh` | number / str | Operator's base price |
+| `currentType` | str | `AC` / `DC` |
+| `commissionPercent`, `PreAuthHoldAmount`, `isDefault` | number / bool | |
+| `pricingByType.CARD`, `pricingByType.TOKEN` | object | Per payment method: `Price` (str), `CommissionPercent`, `restrictions`, `minPrice`, `maxPrice`. Card is usually a few cents higher. |
+| `parkingPricing` | object | `IsEnabled`, `IsParkingFeeEnabled`, `ParkingFee`, `ParkingCap`, `MaxDurationInMinutes`, `MaxFee`, `Currency`, `exception`, `restrictions` |
 | `restrictions` | object[] | Time-of-day / weekday / duration conditions |
-| `pricingByType.CARD`, `pricingByType.TOKEN` | object | Per payment method: `Price`, `CommissionPercent`, `restrictions` |
 | `flatPricing` | object | `IsEnabled`, `Fee`, `Currency`, `restrictions` (session fee) |
 | `timePricing` | object | Overstay/time fee: `IsEnabled`, price, `exception` |
-| `parkingPricing` | object | `IsEnabled`, price, `ParkingCap`, `MinDurationMinutes`, `exception` |
 | `exception` | object | `type` (`skip` / `partial_skip`), `startTime`, `endTime` (not charged between) |
 | `otherPricing[]` | Pricing | Alternative tariffs |
 | `minPrice`, `maxPrice` | number | |

@@ -26,3 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   with token refresh on socket authentication errors. Not yet tested on a real session.
 - `EvdcTwoFactorRequiredError` for accounts with two-factor authentication, which is not supported yet.
 - API documentation in `docs/api.md`.
+- Nearby charging points, on both clients. `get_nearby_stations(latitude, longitude, page, page_size)` returns one
+  page from `/api/hubject/nearby/{longitude}/{latitude}` (longitude first, verified), nearest first.
+  `find_stations_near(latitude, longitude, radius_m=2000, max_results=None)` walks the pages and stops at the radius,
+  since the backend has no radius parameter, or after `max_results` when given. Verified on the real backend.
+- `Evse` gains `name`, `status`, `distance_m`, `facilities` (`ChargingFacility`), `is_open_24h` and `max_power_kw`;
+  `Pricing` gains `card_price`, `token_price`, `base_price`, `base_currency`, `parking_fee_enabled` and
+  `parking_fee`.

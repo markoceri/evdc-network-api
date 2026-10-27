@@ -33,3 +33,4 @@ Example scripts for reading your own EVDC data.
 |---|---|
 | `usage.py` | Logs in and prints the account, ongoing sessions and the first page of the charging history |
 | `live.py` | Connects to the live socket and prints `chargingSessionProgress` updates while charging |
+| `nearby.py` | `python nearby.py <lat> <lng> [radius_m]`: charging points around a position, with price and status |
