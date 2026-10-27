@@ -14,9 +14,18 @@
       "currency": "EUR",
       "consumedEnergy": 18.4,
       "operator": "Test Charging Srl",
+      "isPaid": true,
+      "isStop": true,
+      "isSessionFailed": false,
+      "isTestSession": false,
       "company": null,
       "location": null,
       "time": null,
+      "notificationDetails": {
+        "chargingStart": "2026-01-11T18:30:00.000Z",
+        "chargingEnd": "2026-01-11T20:05:00.000Z",
+        "sessionEnd": "2026-01-11T20:10:00.000Z"
+      },
       "pricingDetails": {
         "Price": 0.59,
         "Unit": "KWH",

@@ -51,6 +51,12 @@ def test_charging_session_fields() -> None:
     assert session.energy_kwh == pytest.approx(18.4)
     assert session.charging_duration_minutes == 95
     assert session.parking_fee == 0
+    assert session.started_at == datetime(2026, 1, 11, 18, 30, tzinfo=UTC)
+    assert session.ended_at == datetime(2026, 1, 11, 20, 5, tzinfo=UTC)
+    assert session.is_paid is True
+    assert session.is_stopped is True
+    assert session.is_failed is False
+    assert session.is_test_session is False
     assert session.address is not None
     assert session.address.city == "Milano"
     assert session.pricing is not None
