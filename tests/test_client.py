@@ -17,6 +17,7 @@ REFRESH = "api/refresh-token"
 PROFILE = "api/profile"
 HISTORY = "api/hubject/charge-history"
 ONGOING = "api/hubject/ongoing-sessionsV2"
+USER_SESSIONS = "api/user-sessions"
 VERIFY_OTP = "api/verifyOTP"
 RESEND_CODE = "api/resendVerificationCode"
 TOTP_LOGIN = "api/2fa/totp/login"
@@ -355,6 +356,46 @@ def test_get_ongoing_sessions_envelopes(fake_session: FakeSession, body: object)
     sessions = _client(fake_session, access_token="token").get_ongoing_sessions()
 
     assert [s.evse_id for s in sessions] == ["IT*TST*E0001*1"]
+
+
+def test_get_connected_sessions(fake_session: FakeSession) -> None:
+    fake_session.add(
+        "GET",
+        USER_SESSIONS,
+        _ok(
+            {
+                "data": [
+                    {"_id": "s1", "deviceModel": "Pixel 8", "city": "Milano", "country": "IT", "isCurrent": True},
+                    {"_id": "s2", "deviceModel": "iPhone", "city": "Roma", "country": "IT", "isCurrent": False},
+                ]
+            }
+        ),
+    )
+
+    sessions = _client(fake_session, access_token="token").get_connected_sessions()
+
+    assert [s.id for s in sessions] == ["s1", "s2"]
+    assert sessions[0].is_current is True
+    assert sessions[0].device_model == "Pixel 8"
+    assert sessions[1].city == "Roma"
+
+
+def test_revoke_session(fake_session: FakeSession) -> None:
+    fake_session.add("DELETE", f"{USER_SESSIONS}/s2", FakeResponse(204, None))
+
+    _client(fake_session, access_token="token").revoke_session("s2")
+
+    assert fake_session.calls[0].method == "DELETE"
+    assert fake_session.calls[0].path == f"{USER_SESSIONS}/s2"
+
+
+def test_revoke_all_sessions(fake_session: FakeSession) -> None:
+    fake_session.add("DELETE", USER_SESSIONS, _ok({"success": True}))
+
+    _client(fake_session, access_token="token").revoke_all_sessions()
+
+    assert fake_session.calls[0].method == "DELETE"
+    assert fake_session.calls[0].path == USER_SESSIONS
 
 
 def test_get_receipt(fake_session: FakeSession) -> None:

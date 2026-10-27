@@ -49,3 +49,19 @@ def test_async_find_stations_near(fake_session: FakeSession) -> None:
     stations = asyncio.run(_async_client(fake_session).find_stations_near(45.0, 9.0, radius_m=400))
 
     assert [s.distance_m for s in stations] == [150.0, 300.0]
+
+
+def test_async_connected_sessions(fake_session: FakeSession) -> None:
+    fake_session.add("GET", "api/user-sessions", FakeResponse(200, {"data": [{"_id": "s1", "isCurrent": True}]}))
+    fake_session.add("DELETE", "api/user-sessions/s1", FakeResponse(204, None))
+    fake_session.add("DELETE", "api/user-sessions", FakeResponse(200, {"success": True}))
+    client = _async_client(fake_session)
+
+    async def run() -> None:
+        sessions = await client.get_connected_sessions()
+        assert [s.id for s in sessions] == ["s1"]
+        await client.revoke_session("s1")
+        await client.revoke_all_sessions()
+
+    asyncio.run(run())
+    assert [c.method for c in fake_session.calls] == ["GET", "DELETE", "DELETE"]

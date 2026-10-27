@@ -9,6 +9,7 @@ import pytest
 from evdc_network_api.models import (
     ChargingHistoryPage,
     ChargingSession,
+    ConnectedSession,
     Evse,
     OngoingSession,
     Receipt,
@@ -160,3 +161,22 @@ def test_pricing_by_payment_type() -> None:
 
 def test_evse_without_facilities_has_no_max_power() -> None:
     assert Evse.from_dict({"EvseID": "X*1"}).max_power_kw is None
+
+
+def test_connected_session_from_dict() -> None:
+    session = ConnectedSession.from_dict(
+        {
+            "_id": "abc",
+            "deviceModel": "Pixel 8",
+            "ip": "203.0.113.1",
+            "city": "Milano",
+            "country": "IT",
+            "isCurrent": True,
+            "createdAt": "2024-01-02T03:04:05Z",
+        }
+    )
+    assert session.id == "abc"
+    assert session.device_model == "Pixel 8"
+    assert session.city == "Milano"
+    assert session.is_current is True
+    assert session.created_at == datetime(2024, 1, 2, 3, 4, 5, tzinfo=UTC)
