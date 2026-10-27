@@ -18,10 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   as `access_token` / `refresh_token`.
 - `get_profile()` → `User`, verified against a real response.
 - `get_charge_history(page, limit)` → `ChargingHistoryPage` with the backend's pagination counters, and
-  `iter_charge_history()` over all pages. The page envelope is verified; the `ChargingSession` fields are
-  reconstructed from the app and not yet seen populated.
-- `get_ongoing_sessions()` → `list[OngoingSession]`, `get_receipt(session_id)` → `Receipt` (decoded PDF) and
-  `get_evse(evse_id)` → `Evse`, all reconstructed from the app.
+  `iter_charge_history()` over all pages. Verified on a real account: `ChargingSession` carries the energy, cost and
+  currency (which may be a wallet unit such as `EVDC Token`), the charging start/end and duration, the invoice
+  number, status flags (`is_paid` / `is_stopped` / `is_failed` / `is_test_session`), the applied tariff and the
+  billed station.
+- `get_ongoing_sessions()` → `list[OngoingSession]` (still reconstructed from the app), `get_receipt(session_id)` →
+  `Receipt` (decoded PDF, verified: the filename is `<invoiceNo>.pdf`) and `get_evse(evse_id)` → `Evse` (verified).
 - Connected sessions / devices, on both clients: `get_connected_sessions()` → `list[ConnectedSession]`,
   `revoke_session(id)` and `revoke_all_sessions()` (`GET` / `DELETE /api/user-sessions`), verified against the real
   backend. A session is created per `x-device-id`, so pass a stable `device_id` to stay a single device.

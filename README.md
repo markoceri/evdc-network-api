@@ -51,9 +51,9 @@ repository, under [`docs/`](docs/). See the [legal notice](LEGAL.md) for the Eur
 
 ## Status
 
-🚧 Alpha. Login, token refresh, the account profile and the charging history envelope are verified against the real
-backend. The session, receipt, station and live-progress models are reconstructed from the app and still need to be
-confirmed on real charging data; their original payload is always kept in `raw`.
+🚧 Alpha. Login, token refresh, the account profile, the charging history and its sessions, the PDF receipt and the
+station details are verified against the real backend. Ongoing sessions and live socket progress are still
+reconstructed from the app and not yet confirmed on a live charge; the original payload is always kept in `raw`.
 
 Email/password accounts are supported, including those with two-factor authentication (an e-mail code or an
 authenticator app): `login()` raises `EvdcTwoFactorRequiredError` and the login is completed with a verification

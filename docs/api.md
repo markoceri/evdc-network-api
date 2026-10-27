@@ -173,12 +173,16 @@ working until it expires** — revoking a session does not kill its live access 
 Query parameters: `page` (1-based) and `limit`.
 
 Response envelope (**verified**): `{ "page", "limit", "totalPages", "totalDocuments", "data": [ … ] }`. The item
-fields are in [ChargingSession](#chargingsession--history-item-get-apihubjectcharge-history--data); they are
-reconstructed from the app, as the probe account has no history yet.
+fields are in [ChargingSession](#chargingsession--history-item-get-apihubjectcharge-history--data), now **verified**
+on a real account. Notable: `consumedEnergy` (kWh) and `amount`/`currency` carry the cost; `timeDetails`
+(`durationInMinutes`), `invoiceNo` (which equals the receipt filename) and `notificationDetails`
+(`chargingStart` / `chargingEnd`) give the timing; status is in `isPaid` / `isStop` / `isSessionFailed` /
+`isTestSession`. `currency` may be a wallet unit such as `"EVDC Token"` with the amount in token units, not EUR.
 
 ### Receipt — `GET /api/hubject/download-pdf/{sessionId}`
 
-Returns the session's PDF receipt as JSON `{ "base64", "filename" }` (from the app's handling; not yet seen live).
+Returns the session's PDF receipt as JSON `{ "base64", "filename" }`, **verified**: `filename` is `<invoiceNo>.pdf`
+and the decoded bytes are a real PDF.
 
 ### Ongoing sessions — `GET /api/hubject/ongoing-sessionsV2`
 
@@ -327,10 +331,10 @@ where `value` is `{ whitelisted: {status, userIds[]}, blacklisted: {status, user
 `Show_Route_Planner`, `testmode`, `Wallet_V2`, `Wallet_ShowCard`, `Show_Rfid_Orders`, `Show_Skip_2FA`,
 `Show_Email_2FA`. Not needed to read sessions; kept for reference.
 
-> **Still inferred, not yet seen populated:** `ChargingSession` (history item), `OngoingSession`, the receipt PDF
-> payload and the `Evse` detail — the probe account has no charging history. The field lists for these below come
-> from the bytecode and must be confirmed against a real charge. A charging session on the probe account (or a
-> capture from the phone) would fill this gap.
+> **Verified on a real account:** `ChargingSession` (history item), the receipt PDF payload and the `Evse` detail
+> (`GET /api/hubject/{evseId}` → `{ "result": { … } }`). `OngoingSession` is still inferred (no session was running
+> during the check). `ChargingSession` nests the applied tariff in `pricingDetails`, the billed station in
+> `chargingStation` (same `EvseData` shape as the EVSE detail) and its address in `evseDetails`.
 
 ### ChargingSession — history item (`GET /api/hubject/charge-history` → `data[]`)
 
