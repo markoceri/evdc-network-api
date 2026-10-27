@@ -30,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - The default `device_model` (sent as `x-device-model` and shown as the device name in the connected-devices list)
   is now `evdc-network-api` instead of an impersonated handset; override it with `device_model` to tell clients
   apart.
+- Biometric device-key login for long-term, password/2FA-free access, verified against the real backend:
+  `enroll_device_key()` registers an RSA key on the account (while authenticated), `login_with_device_key()` logs in
+  through `/api/biometric-login`, and `remove_device_key()` revokes it; `generate_device_key()` is also exported. A
+  client built with `device_key` + `user_id` uses this path automatically. Keep the private key outside the
+  repository, like the tokens.
 - `EvdcLiveClient` (`live` extra, `python-socketio`): live `chargingSessionProgress` updates as `SessionProgress`,
   with token refresh on socket authentication errors. Not yet tested on a real session.
 - Two-factor login. When an account has 2FA enabled, `login()` raises `EvdcTwoFactorRequiredError` (carrying the

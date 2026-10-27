@@ -152,6 +152,24 @@ client = EvdcApiClient(
 )
 ```
 
+For long-running or headless use, a **device key** avoids re-doing two-factor every time the refresh token lapses.
+Enrol one once (from an authenticated session), persist the returned private key **outside the repository** next to
+the account id, and log in with it afterwards — no password, no 2FA:
+
+```python
+# once, while logged in:
+device_key = client.enroll_device_key()  # returns the private-key PEM; save it securely
+save(device_key, client.user_id)
+
+# later, in a fresh process:
+client = EvdcApiClient(email="you@example.com", device_key=saved_device_key, user_id=saved_user_id)
+client.get_profile()  # logs in via the device key automatically
+client.remove_device_key()  # revoke it when no longer needed
+```
+
+The private key is a long-term login credential that bypasses two-factor: store it like a password and revoke it if
+it leaks.
+
 An async wrapper is available as `AsyncEvdcApiClient(client)`, and live progress of an ongoing session as
 `evdc_network_api.live.EvdcLiveClient`. See [`examples/`](examples/) and the API notes in [`docs/api.md`](docs/api.md).
 

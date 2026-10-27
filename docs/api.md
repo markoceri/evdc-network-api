@@ -103,6 +103,30 @@ So `signIn-enc` returns a token even when 2FA is pending: for `email` it is only
 is also needed to authorise the verification call. The client holds it either way and exposes `verify_two_factor()`,
 `verify_recovery_code()` and `resend_two_factor_code()`, reading the tokens from `user`, `data` or the root.
 
+### Biometric device-key login (long-term, no password / 2FA) — **verified**
+
+The app's "biometric login" is a device-bound key pair: the fingerprint only unlocks the private key locally. The
+same scheme works for a headless client that holds the private key itself, giving a durable login that needs no
+password and no 2FA.
+
+- **Enroll** (while authenticated): `PUT /api/profile { "biometricKey": "<base64 DER SPKI public key>" }`. The
+  server stores the public key in the account's `biometricKeys`. `PUT /api/profile` **merges** (the app sends only
+  the edited fields), so sending just `biometricKey` leaves the rest of the profile untouched. Note `GET
+  /api/profile` does **not** return `biometricKeys` (the biometric-login response does).
+- **Login**: `POST /api/biometric-login` (unauthenticated) with
+  ```json
+  { "fcmToken": "<non-empty>", "signature": "<base64>", "payload": "<epoch seconds>", "userId": "<_id>" }
+  ```
+  `payload` is `Math.round(Date.now()/1000)` as a string; `signature` is RSA **PKCS#1 v1.5 over SHA-256** of the
+  payload bytes, base64. `fcmToken` must be non-empty but is not otherwise used (a constant works; it does not
+  overwrite the real push token). Response (HTTP 200): tokens at the **root** (`accessToken`, `refreshToken`,
+  `token`) plus the account under `user`. The access token lasts 5 minutes; a refresh token is issued too.
+- **Remove**: `POST /api/remove-biometricKey { "biometricKey": "<base64 DER SPKI public key>" }`.
+
+Key format is what `react-native-biometrics` produces: RSA-2048, public key as base64 of the DER
+SubjectPublicKeyInfo. The client exposes `enroll_device_key()`, `login_with_device_key()` and `remove_device_key()`,
+and `generate_device_key()`; a client built with `device_key` + `user_id` logs in through this path automatically.
+
 ### Token refresh — `POST /api/refresh-token`
 
 ```json
@@ -123,6 +147,9 @@ with the new token. If there is no refresh token or the refresh fails, the app l
 |---|---|---|
 | GET | `/api/profile` | Current user profile |
 | POST | `/api/signOut` | Logout |
+| PUT | `/api/profile` | Update the profile (merge); also enrols a biometric key via `{ "biometricKey" }`, **verified** |
+| POST | `/api/biometric-login` | Device-key login, no password/2FA, **verified** |
+| POST | `/api/remove-biometricKey` | Revoke a biometric key, **verified** |
 | GET | `/api/user-sessions` | List the account's logged-in sessions / devices (`{ "data": [ … ] }`), **verified** |
 | DELETE | `/api/user-sessions/{id}` | Revoke one session by its `_id`, **verified** |
 | DELETE | `/api/user-sessions` | Revoke all sessions (current one included), **verified** |
