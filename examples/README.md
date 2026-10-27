@@ -10,12 +10,13 @@ Example scripts for reading your own EVDC data.
    pip install -e ".[live]"
    ```
 
-2. Set your EVDC credentials. Only email/password accounts without two-factor authentication are supported for now;
-   an account created with Google or Apple sign-in has no EVDC password.
+2. Set your EVDC credentials (an account created with Google or Apple sign-in has no EVDC password). Copy
+   [`../.env.example`](../.env.example) to `.env` and fill it in, then load it, or export the variables directly:
 
    ```bash
    export EVDC_EMAIL="you@example.com"
    export EVDC_PASSWORD="your_password"
+   export EVDC_DEVICE_ID="$(python -c 'import secrets; print(secrets.token_hex(32))')"  # once, then reuse
    ```
 
 ## Environment variables
@@ -34,3 +35,4 @@ Example scripts for reading your own EVDC data.
 | `usage.py` | Logs in and prints the account, ongoing sessions and the first page of the charging history |
 | `live.py` | Connects to the live socket and prints `chargingSessionProgress` updates while charging |
 | `nearby.py` | `python nearby.py <lat> <lng> [radius_m]`: charging points around a position, with price and status |
+| `sessions.py` | Lists the account's logged-in sessions / devices, and can revoke one or the rest |

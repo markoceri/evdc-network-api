@@ -118,7 +118,14 @@ with the new token. If there is no refresh token or the refresh fails, the app l
 |---|---|---|
 | GET | `/api/profile` | Current user profile |
 | POST | `/api/signOut` | Logout |
-| GET | `/api/user-sessions` | Active login sessions |
+| GET | `/api/user-sessions` | List the account's logged-in sessions / devices (`{ "data": [ … ] }`) |
+| DELETE | `/api/user-sessions/{id}` | Revoke one session by its `_id` |
+| DELETE | `/api/user-sessions` | Revoke the other sessions |
+
+Each session item carries `_id`, `deviceModel`, `ip`, `city`, `country`, `isCurrent` and `createdAt` (reconstructed
+from the devices screen, not yet confirmed on a real response). A session is created per distinct `x-device-id`, so
+reusing a stable device id keeps the client as a single device instead of a new one each login. The client exposes
+`get_connected_sessions()`, `revoke_session(id)` and `revoke_all_sessions()`.
 
 ## Charging sessions
 

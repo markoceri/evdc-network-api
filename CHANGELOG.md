@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   reconstructed from the app and not yet seen populated.
 - `get_ongoing_sessions()` → `list[OngoingSession]`, `get_receipt(session_id)` → `Receipt` (decoded PDF) and
   `get_evse(evse_id)` → `Evse`, all reconstructed from the app.
+- Connected sessions / devices, on both clients: `get_connected_sessions()` → `list[ConnectedSession]`,
+  `revoke_session(id)` and `revoke_all_sessions()` (`GET` / `DELETE /api/user-sessions`). A session is created per
+  `x-device-id`, so pass a stable `device_id` to stay a single device. Reconstructed from the app.
 - `EvdcLiveClient` (`live` extra, `python-socketio`): live `chargingSessionProgress` updates as `SessionProgress`,
   with token refresh on socket authentication errors. Not yet tested on a real session.
 - Two-factor login. When an account has 2FA enabled, `login()` raises `EvdcTwoFactorRequiredError` (carrying the

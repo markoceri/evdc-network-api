@@ -122,6 +122,17 @@ except EvdcTwoFactorRequiredError as exc:
 # the client is authenticated from here on
 ```
 
+The account's logged-in sessions (devices) can be listed and revoked. A session is created per device id, so pass a
+**stable** `device_id` (a 64-hex string kept across runs) to stay one device instead of registering a new one each
+login:
+
+```python
+for s in client.get_connected_sessions():
+    print(s.device_model, s.city, s.country, "(this device)" if s.is_current else "")
+client.revoke_session(session_id)  # log one device out
+client.revoke_all_sessions()  # log the other devices out
+```
+
 The client logs in on the first call and refreshes the access token by itself. To avoid a new login at every start,
 persist the tokens and the device id:
 

@@ -7,6 +7,7 @@ from evdc_network_api import EvdcApiClient, EvdcApiError
 
 EMAIL = os.environ.get("EVDC_EMAIL", "")
 PASSWORD = os.environ.get("EVDC_PASSWORD", "")
+DEVICE_ID = os.environ.get("EVDC_DEVICE_ID")  # optional: a stable 64-hex id, reused across runs
 
 if not EMAIL or not PASSWORD or len(sys.argv) < 3:
     print("usage: EVDC_EMAIL=... EVDC_PASSWORD=... python nearby.py <latitude> <longitude> [radius_m]")
@@ -17,7 +18,7 @@ def main() -> None:
     latitude, longitude = float(sys.argv[1]), float(sys.argv[2])
     radius_m = float(sys.argv[3]) if len(sys.argv) > 3 else 1000
 
-    with EvdcApiClient(email=EMAIL, password=PASSWORD) as client:
+    with EvdcApiClient(email=EMAIL, password=PASSWORD, device_id=DEVICE_ID) as client:
         try:
             stations = client.find_stations_near(latitude, longitude, radius_m=radius_m)
         except EvdcApiError as exc:
