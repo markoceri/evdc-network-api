@@ -21,7 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `iter_charge_history()` over all pages. Verified on a real account: `ChargingSession` carries the energy, cost and
   currency (which may be a wallet unit such as `EVDC Token`), the charging start/end and duration, the invoice
   number, status flags (`is_paid` / `is_stopped` / `is_failed` / `is_test_session`), the applied tariff and the
-  billed station.
+  billed station. `cost` / `cost_currency` give the real-money price even when `amount` / `currency` is in tokens,
+  with `token_conversion_rate` relating the two.
 - `get_ongoing_sessions()` → `list[OngoingSession]` (still reconstructed from the app), `get_receipt(session_id)` →
   `Receipt` (decoded PDF, verified: the filename is `<invoiceNo>.pdf`) and `get_evse(evse_id)` → `Evse` (verified).
 - Read-only wallet access, verified on a real account: `get_wallets()` → `list[Wallet]` (balance per currency,

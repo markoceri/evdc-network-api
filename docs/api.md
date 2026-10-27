@@ -174,10 +174,17 @@ Query parameters: `page` (1-based) and `limit`.
 
 Response envelope (**verified**): `{ "page", "limit", "totalPages", "totalDocuments", "data": [ … ] }`. The item
 fields are in [ChargingSession](#chargingsession--history-item-get-apihubjectcharge-history--data), now **verified**
-on a real account. Notable: `consumedEnergy` (kWh) and `amount`/`currency` carry the cost; `timeDetails`
-(`durationInMinutes`), `invoiceNo` (which equals the receipt filename) and `notificationDetails`
-(`chargingStart` / `chargingEnd`) give the timing; status is in `isPaid` / `isStop` / `isSessionFailed` /
-`isTestSession`. `currency` may be a wallet unit such as `"EVDC Token"` with the amount in token units, not EUR.
+on a real account. Notable: `consumedEnergy` (kWh); `timeDetails` (`durationInMinutes`), `invoiceNo` (which equals
+the receipt filename) and `notificationDetails` (`chargingStart` / `chargingEnd`) give the timing; status is in
+`isPaid` / `isStop` / `isSessionFailed` / `isTestSession`.
+
+**Cost vs. amount (important for token-paid sessions).** The top-level `amount` / `currency` is what left the
+wallet — for a token-paid session that is in tokens (e.g. `"EVDC Token"`), not money. The real-money price is in
+`pricingDetails`: `chargingPrice` with `Currency`, and `tokenConversionRate` relates the two
+(`amount ≈ chargingPrice × tokenConversionRate`, and the rate is `1` for a money-paid session). Verified: a token
+session showed `amount` 352160.89 EVDC Token, `chargingPrice` 6.81 EUR, rate 51712.32. The library surfaces these as
+`cost` / `cost_currency` / `token_conversion_rate`. The `tokenConversionRate` lives only on the session;
+`GET /api/wallet/currencies` lists the fiat currencies (EUR, USD) and Stripe fees, not the tokens or any rate.
 
 ### Receipt — `GET /api/hubject/download-pdf/{sessionId}`
 
