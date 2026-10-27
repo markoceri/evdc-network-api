@@ -47,6 +47,9 @@ PATH_REMOVE_BIOMETRIC_KEY = "api/remove-biometricKey"  # noqa: S105 - a URL path
 DEFAULT_FCM_TOKEN = "evdc-network-api"  # noqa: S105 - a placeholder, not a secret
 # Connected login sessions / devices: GET lists them, DELETE one revokes it, DELETE the collection revokes the rest.
 PATH_USER_SESSIONS = "api/user-sessions"  # noqa: S105 - a URL path, not a secret
+# Wallet (read-only): the user's balances and their transaction history.
+PATH_WALLETS = "api/wallet/user/wallets"
+PATH_WALLET_HISTORY = "api/wallet/history"
 # Longitude first (GeoJSON order): verified on the real backend, the reverse order returns far-away results.
 PATH_NEARBY = "api/hubject/nearby/{longitude}/{latitude}"
 

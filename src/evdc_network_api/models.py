@@ -345,6 +345,121 @@ class ChargingSession:
 
 
 @dataclass(slots=True)
+class Wallet:
+    """A user wallet with its balance (``/api/wallet/user/wallets``)."""
+
+    id: str | None
+    balance: float | None = None
+    currency: str | None = None
+    is_primary: bool | None = None
+    is_token: bool | None = None
+    currency_name: str | None = None
+    currency_symbol: str | None = None
+    decimals: int | None = None
+    currency_type: str | None = None
+    raw: dict[str, Any] = field(default_factory=dict, repr=False)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Wallet:
+        details = _dict(data.get("currencyDetails"))
+        decimals = _float(details.get("decimals"))
+        return cls(
+            id=_str(data.get("_id")),
+            balance=_float(data.get("balance")),
+            currency=_str(data.get("currency")),
+            is_primary=_bool(data.get("isPrimary")),
+            is_token=_bool(data.get("isToken")),
+            currency_name=_str(details.get("name")),
+            currency_symbol=_str(details.get("symbol")),
+            decimals=int(decimals) if decimals is not None else None,
+            currency_type=_str(details.get("type")),
+            raw=data,
+        )
+
+
+@dataclass(slots=True)
+class WalletTransaction:
+    """One wallet movement (``/api/wallet/history`` → ``data[]``).
+
+    ``amount`` is signed (negative for a charge paid, positive for a top-up). ``session_id`` links a payment to the
+    charging session it settled.
+    """
+
+    id: str | None
+    amount: float | None = None
+    currency: str | None = None
+    description: str | None = None
+    category: str | None = None
+    is_token: bool | None = None
+    old_balance: float | None = None
+    new_balance: float | None = None
+    session_id: str | None = None
+    created_at: datetime | None = None
+    raw: dict[str, Any] = field(default_factory=dict, repr=False)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> WalletTransaction:
+        return cls(
+            id=_str(data.get("_id")),
+            amount=_float(data.get("transactionAmount")),
+            currency=_str(data.get("currency")),
+            description=_str(data.get("description")),
+            category=_str(data.get("category")),
+            is_token=_bool(data.get("isToken")),
+            old_balance=_float(data.get("oldBalance")),
+            new_balance=_float(data.get("newBalance")),
+            session_id=_str(_dict(data.get("metaData")).get("sessionId")),
+            created_at=_datetime(data.get("createdAt")),
+            raw=data,
+        )
+
+
+@dataclass(slots=True)
+class WalletHistoryPage:
+    """One page of wallet transactions, with the backend's pagination counters and closing balances."""
+
+    transactions: list[WalletTransaction]
+    page: int | None = None
+    limit: int | None = None
+    total: int | None = None
+    total_pages: int | None = None
+    closing_balances: dict[str, float] = field(default_factory=dict)
+    raw: dict[str, Any] = field(default_factory=dict, repr=False)
+
+    @property
+    def has_next(self) -> bool:
+        if self.page is not None and self.total_pages is not None:
+            return self.page < self.total_pages
+        return self.limit is not None and len(self.transactions) >= self.limit
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> WalletHistoryPage:
+        items = data.get("data")
+
+        def _int(value: Any) -> int | None:
+            number = _float(value)
+            return int(number) if number is not None else None
+
+        balances: dict[str, float] = {}
+        for entry in data.get("balances") or []:
+            if isinstance(entry, dict):
+                currency, closing = _str(entry.get("currency")), _float(entry.get("closingBalance"))
+                if currency is not None and closing is not None:
+                    balances[currency] = closing
+        return cls(
+            transactions=[WalletTransaction.from_dict(i) for i in items if isinstance(i, dict)]
+            if isinstance(items, list)
+            else [],
+            page=_int(data.get("page")),
+            limit=_int(data.get("limit")),
+            total=_int(data.get("total")),
+            total_pages=_int(data.get("totalPages")),
+            closing_balances=balances,
+            raw=data,
+        )
+
+
+@dataclass(slots=True)
 class ChargingHistoryPage:
     """One page of the charging history, with the backend's pagination counters."""
 

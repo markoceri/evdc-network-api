@@ -13,7 +13,18 @@ from .const import DEFAULT_NEARBY_RADIUS_M, DEFAULT_PAGE_SIZE, NEARBY_PAGE_SIZE
 
 if TYPE_CHECKING:
     from .client import EvdcApiClient
-    from .models import ChargingHistoryPage, ChargingSession, ConnectedSession, Evse, OngoingSession, Receipt, User
+    from .models import (
+        ChargingHistoryPage,
+        ChargingSession,
+        ConnectedSession,
+        Evse,
+        OngoingSession,
+        Receipt,
+        User,
+        Wallet,
+        WalletHistoryPage,
+        WalletTransaction,
+    )
 
 
 class AsyncEvdcApiClient:
@@ -91,6 +102,34 @@ class AsyncEvdcApiClient:
 
     async def revoke_all_sessions(self) -> None:
         await asyncio.to_thread(self._client.revoke_all_sessions)
+
+    async def get_wallets(self) -> list[Wallet]:
+        return await asyncio.to_thread(self._client.get_wallets)
+
+    async def get_wallet_transactions(
+        self,
+        page: int = 1,
+        limit: int = DEFAULT_PAGE_SIZE,
+        *,
+        currency: str | None = None,
+        is_token: bool | None = None,
+    ) -> WalletHistoryPage:
+        return await asyncio.to_thread(
+            lambda: self._client.get_wallet_transactions(page, limit, currency=currency, is_token=is_token)
+        )
+
+    async def get_all_wallet_transactions(
+        self,
+        limit: int = DEFAULT_PAGE_SIZE,
+        max_pages: int | None = None,
+        *,
+        currency: str | None = None,
+        is_token: bool | None = None,
+    ) -> list[WalletTransaction]:
+        """Fetch the whole wallet history (all pages, or up to *max_pages*)."""
+        return await asyncio.to_thread(
+            lambda: list(self._client.iter_wallet_transactions(limit, max_pages, currency=currency, is_token=is_token))
+        )
 
     async def get_nearby_stations(
         self, latitude: float, longitude: float, page: int = 1, page_size: int = NEARBY_PAGE_SIZE

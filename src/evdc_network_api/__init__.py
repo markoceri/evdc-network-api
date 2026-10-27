@@ -21,6 +21,9 @@ from .models import (
     Receipt,
     SessionProgress,
     User,
+    Wallet,
+    WalletHistoryPage,
+    WalletTransaction,
 )
 
 __all__ = [
@@ -42,6 +45,9 @@ __all__ = [
     "Receipt",
     "SessionProgress",
     "User",
+    "Wallet",
+    "WalletHistoryPage",
+    "WalletTransaction",
     "__version__",
     "generate_device_key",
 ]

@@ -38,13 +38,26 @@ from .const import (
     PATH_TOTP_RECOVERY_LOGIN,
     PATH_USER_SESSIONS,
     PATH_VERIFY_OTP,
+    PATH_WALLET_HISTORY,
+    PATH_WALLETS,
     REQ_SCOPE,
     TWO_FACTOR_METHOD_EMAIL,
     TWO_FACTOR_METHOD_TOTP,
 )
 from .crypto import device_public_key, encrypt_password, generate_device_key, sign_device_payload
 from .exceptions import EvdcApiError, EvdcAuthError, EvdcTwoFactorRequiredError
-from .models import ChargingHistoryPage, ChargingSession, ConnectedSession, Evse, OngoingSession, Receipt, User
+from .models import (
+    ChargingHistoryPage,
+    ChargingSession,
+    ConnectedSession,
+    Evse,
+    OngoingSession,
+    Receipt,
+    User,
+    Wallet,
+    WalletHistoryPage,
+    WalletTransaction,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -444,6 +457,45 @@ class EvdcApiClient:
         Whether the current session is kept or also revoked is decided by the backend and not yet confirmed.
         """
         self._authed("DELETE", PATH_USER_SESSIONS, allow_empty=True)
+
+    def get_wallets(self) -> list[Wallet]:
+        """Fetch the account's wallets with their balances (e.g. a EUR wallet and an EVDC-token wallet)."""
+        body = self._authed("GET", PATH_WALLETS)
+        return [Wallet.from_dict(item) for item in _items(body)]
+
+    def get_wallet_transactions(
+        self,
+        page: int = 1,
+        limit: int = DEFAULT_PAGE_SIZE,
+        *,
+        currency: str | None = None,
+        is_token: bool | None = None,
+    ) -> WalletHistoryPage:
+        """Fetch one page of wallet transactions (newest first); each one may link to a session via ``session_id``."""
+        params: dict[str, Any] = {"page": page, "limit": limit}
+        if currency is not None:
+            params["currency"] = currency
+        if is_token is not None:
+            params["isToken"] = is_token
+        body = self._authed("GET", PATH_WALLET_HISTORY, params=params)
+        return WalletHistoryPage.from_dict(_dict(body))
+
+    def iter_wallet_transactions(
+        self,
+        limit: int = DEFAULT_PAGE_SIZE,
+        max_pages: int | None = None,
+        *,
+        currency: str | None = None,
+        is_token: bool | None = None,
+    ) -> Iterator[WalletTransaction]:
+        """Iterate over the whole wallet history, newest first, one page request at a time."""
+        page = 1
+        while max_pages is None or page <= max_pages:
+            result = self.get_wallet_transactions(page=page, limit=limit, currency=currency, is_token=is_token)
+            yield from result.transactions
+            if not result.transactions or not result.has_next:
+                return
+            page += 1
 
     def get_nearby_stations(
         self, latitude: float, longitude: float, page: int = 1, page_size: int = NEARBY_PAGE_SIZE
