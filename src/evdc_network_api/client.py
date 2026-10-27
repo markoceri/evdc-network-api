@@ -26,7 +26,9 @@ from .const import (
     PATH_BIOMETRIC_LOGIN,
     PATH_CHARGE_HISTORY,
     PATH_EVSE,
+    PATH_FAVOURITE_STATIONS,
     PATH_NEARBY,
+    PATH_NOTIFICATIONS,
     PATH_ONGOING_SESSIONS,
     PATH_PROFILE,
     PATH_RECEIPT,
@@ -51,6 +53,8 @@ from .models import (
     ChargingSession,
     ConnectedSession,
     Evse,
+    Notification,
+    NotificationPage,
     OngoingSession,
     Receipt,
     User,
@@ -458,6 +462,40 @@ class EvdcApiClient:
         """
         self._authed("DELETE", PATH_USER_SESSIONS, allow_empty=True)
 
+    def get_favourite_stations(self) -> list[Evse]:
+        """Fetch the account's favourite charging points, as :class:`Evse` with live status and prices."""
+        body = self._authed("GET", PATH_FAVOURITE_STATIONS)
+        # Each item wraps the EVSE under ``station_data``; map it to the key Evse.from_dict expects.
+        return [Evse.from_dict({**item, "EvseData": item.get("station_data")}) for item in _items(body)]
+
+    def get_notifications(
+        self, page: int = 1, limit: int = DEFAULT_PAGE_SIZE, *, success: bool = True
+    ) -> NotificationPage:
+        """Fetch one page of account notifications (newest first). ``success`` is required by the backend."""
+        # The backend parses ``success`` as a lowercase boolean string ("true"/"false"), not Python's "True".
+        params = {"page": page, "limit": limit, "success": str(success).lower()}
+        body = self._authed("GET", PATH_NOTIFICATIONS, params=params)
+        return NotificationPage.from_dict(_dict(body))
+
+    def iter_notifications(
+        self, limit: int = DEFAULT_PAGE_SIZE, max_pages: int | None = None, *, success: bool = True
+    ) -> Iterator[Notification]:
+        """Iterate over all notifications, newest first, one page request at a time."""
+        page = 1
+        while max_pages is None or page <= max_pages:
+            result = self.get_notifications(page=page, limit=limit, success=success)
+            yield from result.notifications
+            if not result.notifications or not result.has_next:
+                return
+            page += 1
+
+    def count_unread_notifications(self, *, success: bool = True) -> int:
+        """Count unread notifications.
+
+        The backend has no unread-count endpoint, so this pages through the notifications and counts the unread ones.
+        """
+        return sum(1 for n in self.iter_notifications(limit=50, success=success) if n.read is False)
+
     def get_wallets(self) -> list[Wallet]:
         """Fetch the account's wallets with their balances (e.g. a EUR wallet and an EVDC-token wallet)."""
         body = self._authed("GET", PATH_WALLETS)
@@ -476,7 +514,7 @@ class EvdcApiClient:
         if currency is not None:
             params["currency"] = currency
         if is_token is not None:
-            params["isToken"] = is_token
+            params["isToken"] = str(is_token).lower()  # the backend wants a lowercase boolean string
         body = self._authed("GET", PATH_WALLET_HISTORY, params=params)
         return WalletHistoryPage.from_dict(_dict(body))
 

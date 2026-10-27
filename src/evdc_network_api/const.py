@@ -50,6 +50,9 @@ PATH_USER_SESSIONS = "api/user-sessions"  # noqa: S105 - a URL path, not a secre
 # Wallet (read-only): the user's balances and their transaction history.
 PATH_WALLETS = "api/wallet/user/wallets"
 PATH_WALLET_HISTORY = "api/wallet/history"
+# Favourite stations and notifications (read-only).
+PATH_FAVOURITE_STATIONS = "api/favourite/stations"
+PATH_NOTIFICATIONS = "api/notification/"
 # Longitude first (GeoJSON order): verified on the real backend, the reverse order returns far-away results.
 PATH_NEARBY = "api/hubject/nearby/{longitude}/{latitude}"
 

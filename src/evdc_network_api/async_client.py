@@ -18,6 +18,7 @@ if TYPE_CHECKING:
         ChargingSession,
         ConnectedSession,
         Evse,
+        NotificationPage,
         OngoingSession,
         Receipt,
         User,
@@ -102,6 +103,17 @@ class AsyncEvdcApiClient:
 
     async def revoke_all_sessions(self) -> None:
         await asyncio.to_thread(self._client.revoke_all_sessions)
+
+    async def get_favourite_stations(self) -> list[Evse]:
+        return await asyncio.to_thread(self._client.get_favourite_stations)
+
+    async def get_notifications(
+        self, page: int = 1, limit: int = DEFAULT_PAGE_SIZE, *, success: bool = True
+    ) -> NotificationPage:
+        return await asyncio.to_thread(lambda: self._client.get_notifications(page, limit, success=success))
+
+    async def count_unread_notifications(self, *, success: bool = True) -> int:
+        return await asyncio.to_thread(lambda: self._client.count_unread_notifications(success=success))
 
     async def get_wallets(self) -> list[Wallet]:
         return await asyncio.to_thread(self._client.get_wallets)

@@ -355,6 +355,68 @@ class ChargingSession:
 
 
 @dataclass(slots=True)
+class Notification:
+    """An account notification (``/api/notification/`` → ``result.data.data[]``)."""
+
+    id: str | None
+    type: str | None = None
+    title: str | None = None
+    body: str | None = None
+    read: bool | None = None
+    success: bool | None = None
+    created_at: datetime | None = None
+    raw: dict[str, Any] = field(default_factory=dict, repr=False)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Notification:
+        return cls(
+            id=_str(data.get("_id")),
+            type=_str(data.get("type")),
+            title=_str(data.get("title")),
+            body=_str(data.get("body")),
+            read=_bool(data.get("read")),
+            success=_bool(data.get("success")),
+            created_at=_datetime(data.get("createdAt")),
+            raw=data,
+        )
+
+
+@dataclass(slots=True)
+class NotificationPage:
+    """One page of notifications, with the backend's pagination counters."""
+
+    notifications: list[Notification]
+    page: int | None = None
+    total: int | None = None
+    total_pages: int | None = None
+    raw: dict[str, Any] = field(default_factory=dict, repr=False)
+
+    @property
+    def has_next(self) -> bool:
+        return self.page is not None and self.total_pages is not None and self.page < self.total_pages
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> NotificationPage:
+        # Envelope: { "result": { "data": { "data": [ … ], "total", "currentPage", "totalPages" } } }.
+        inner = _dict(_dict(data.get("result")).get("data")) or _dict(data.get("data")) or data
+        items = inner.get("data")
+
+        def _int(value: Any) -> int | None:
+            number = _float(value)
+            return int(number) if number is not None else None
+
+        return cls(
+            notifications=[Notification.from_dict(i) for i in items if isinstance(i, dict)]
+            if isinstance(items, list)
+            else [],
+            page=_int(inner.get("currentPage")),
+            total=_int(inner.get("total")),
+            total_pages=_int(inner.get("totalPages")),
+            raw=data,
+        )
+
+
+@dataclass(slots=True)
 class Wallet:
     """A user wallet with its balance (``/api/wallet/user/wallets``)."""
 
