@@ -1,0 +1,28 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+### Added
+- `EvdcApiClient`, a synchronous client for the EVDC backend (`https://api-v2.evdccharge.co/`), and
+  `AsyncEvdcApiClient`, an `asyncio.to_thread()` wrapper around it.
+- Login with email and password through `/api/signIn-enc`. The password is encrypted with RSA-OAEP (SHA-256) using
+  the app's public key, as the app does. The client sends the app's headers (`req-scope`, `x-device-id`,
+  `x-device-model`, `x-app-version`, `x-request-id`) and a stable random device id.
+- Automatic authentication: the first call logs in, an HTTP 401 triggers one refresh through `/api/refresh-token`
+  and a failed refresh falls back to a full login. Tokens can be persisted with `on_tokens_updated` and passed back
+  as `access_token` / `refresh_token`.
+- `get_profile()` → `User`, verified against a real response.
+- `get_charge_history(page, limit)` → `ChargingHistoryPage` with the backend's pagination counters, and
+  `iter_charge_history()` over all pages. The page envelope is verified; the `ChargingSession` fields are
+  reconstructed from the app and not yet seen populated.
+- `get_ongoing_sessions()` → `list[OngoingSession]`, `get_receipt(session_id)` → `Receipt` (decoded PDF) and
+  `get_evse(evse_id)` → `Evse`, all reconstructed from the app.
+- `EvdcLiveClient` (`live` extra, `python-socketio`): live `chargingSessionProgress` updates as `SessionProgress`,
+  with token refresh on socket authentication errors. Not yet tested on a real session.
+- `EvdcTwoFactorRequiredError` for accounts with two-factor authentication, which is not supported yet.
+- API documentation in `docs/api.md`.

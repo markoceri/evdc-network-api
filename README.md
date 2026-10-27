@@ -51,11 +51,53 @@ repository, under [`docs/`](docs/). See the [legal notice](LEGAL.md) for the Eur
 
 ## Status
 
-🚧 Early development — the API surface is not defined yet.
+🚧 Alpha. Login, token refresh, the account profile and the charging history envelope are verified against the real
+backend. The session, receipt, station and live-progress models are reconstructed from the app and still need to be
+confirmed on real charging data; their original payload is always kept in `raw`.
+
+Only email/password accounts **without two-factor authentication** are supported. Accounts created with Google or
+Apple sign-in have no EVDC password and cannot log in through the API.
 
 ## Installation
 
-Not yet published on PyPI.
+Not yet published on PyPI. From a clone:
+
+```bash
+pip install -e .            # client
+pip install -e ".[live]"    # plus live session progress (python-socketio)
+```
+
+## Usage
+
+```python
+from evdc_network_api import EvdcApiClient
+
+with EvdcApiClient(email="you@example.com", password="...") as client:
+    for session in client.iter_charge_history():
+        print(session.created_at, session.energy_kwh, "kWh", session.amount, session.currency, session.evse_id)
+
+    for ongoing in client.get_ongoing_sessions():
+        print("charging on", ongoing.evse_id, "since", ongoing.created_at)
+
+    receipt = client.get_receipt(session_id)  # PDF bytes in receipt.content
+```
+
+The client logs in on the first call and refreshes the access token by itself. To avoid a new login at every start,
+persist the tokens and the device id:
+
+```python
+client = EvdcApiClient(
+    email="you@example.com",
+    password="...",
+    device_id=saved_device_id,          # stable 64-hex id
+    access_token=saved_access_token,
+    refresh_token=saved_refresh_token,
+    on_tokens_updated=lambda access, refresh: save(access, refresh),
+)
+```
+
+An async wrapper is available as `AsyncEvdcApiClient(client)`, and live progress of an ongoing session as
+`evdc_network_api.live.EvdcLiveClient`. See [`examples/`](examples/) and the API notes in [`docs/api.md`](docs/api.md).
 
 ## Legal
 
