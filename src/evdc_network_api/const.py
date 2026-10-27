@@ -33,6 +33,17 @@ PATH_CHARGE_HISTORY = "api/hubject/charge-history"
 PATH_RECEIPT = "api/hubject/download-pdf/{session_id}"
 PATH_ONGOING_SESSIONS = "api/hubject/ongoing-sessionsV2"
 PATH_EVSE = "api/hubject/{evse_id}"
+# Longitude first (GeoJSON order): verified on the real backend, the reverse order returns far-away results.
+PATH_NEARBY = "api/hubject/nearby/{longitude}/{latitude}"
+
+# Nearby search around one point. The backend returns charging points sorted by distance, paginated, with no
+# radius parameter: the radius is applied client-side and bounds the number of requests. The app asks for 5 per
+# page; the backend honours larger pages (verified up to 200), so the radius search reads 50 at a time to keep the
+# number of requests low in dense areas.
+NEARBY_PAGE_SIZE = 10
+NEARBY_SEARCH_PAGE_SIZE = 50
+MAX_NEARBY_PAGE_SIZE = 100
+DEFAULT_NEARBY_RADIUS_M = 2000
 
 # socket.io event names.
 SOCKET_EVENT_REGISTER = "register"

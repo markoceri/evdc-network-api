@@ -10,6 +10,7 @@ from .const import DEFAULT_BASE_URL, DEFAULT_PAGE_SIZE
 from .exceptions import EvdcApiError, EvdcAuthError, EvdcTwoFactorRequiredError
 from .models import (
     Address,
+    ChargingFacility,
     ChargingHistoryPage,
     ChargingSession,
     Evse,
@@ -25,6 +26,7 @@ __all__ = [
     "DEFAULT_PAGE_SIZE",
     "Address",
     "AsyncEvdcApiClient",
+    "ChargingFacility",
     "ChargingHistoryPage",
     "ChargingSession",
     "EvdcApiClient",

@@ -150,56 +150,122 @@ class Address:
 
 @dataclass(slots=True)
 class Pricing:
-    """A tariff. Only the base energy price is modelled; fees and restrictions stay in ``raw``."""
+    """A tariff, per ``unit`` (e.g. ``kWh``), in ``currency``.
+
+    ``price`` is what the user pays with the EVDC wallet/tokens (the app's default); ``card_price`` is the price when
+    paying by card, usually a little higher; ``base_price`` is the operator's base amount. Time-based fees and
+    restrictions stay in ``raw``.
+    """
 
     price: float | None = None
     unit: str | None = None
     currency: str | None = None
+    card_price: float | None = None
+    token_price: float | None = None
+    base_price: float | None = None
+    base_currency: str | None = None
+    parking_fee_enabled: bool | None = None
+    parking_fee: float | None = None
     raw: dict[str, Any] = field(default_factory=dict, repr=False)
 
     @classmethod
     def from_dict(cls, data: Any) -> Pricing | None:
         if not isinstance(data, dict) or not data:
             return None
+        by_type = _dict(data.get("pricingByType"))
+        parking = _dict(data.get("parkingPricing"))
         return cls(
             price=_float(data.get("Price")),
             unit=_str(data.get("Unit")),
             currency=_str(data.get("Currency")),
+            card_price=_float(_dict(by_type.get("CARD")).get("Price")),
+            token_price=_float(_dict(by_type.get("TOKEN")).get("Price")),
+            base_price=_float(data.get("BaseAmount")),
+            base_currency=_str(data.get("BaseCurrency")),
+            parking_fee_enabled=_bool(parking.get("IsParkingFeeEnabled")) if parking else None,
+            parking_fee=_float(parking.get("ParkingFee")),
             raw=data,
         )
 
 
 @dataclass(slots=True)
+class ChargingFacility:
+    """One power option of a charging point (Hubject OICP ``ChargingFacilities``)."""
+
+    power_kw: float | None = None
+    power_type: str | None = None
+    """``AC_1_PHASE``, ``AC_3_PHASE`` or ``DC``."""
+    voltage: float | None = None
+    amperage: float | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ChargingFacility:
+        return cls(
+            power_kw=_float(data.get("Power")),
+            power_type=_str(data.get("PowerType")),
+            voltage=_float(data.get("Voltage")),
+            amperage=_float(data.get("Amperage")),
+        )
+
+
+@dataclass(slots=True)
 class Evse:
-    """A charging point (``/api/hubject/{evseId}``, or embedded in a session as ``chargingStation``)."""
+    """A charging point (EVSE): one connector of a charging station.
+
+    Returned by :meth:`EvdcApiClient.get_evse` and the nearby search, and embedded in a session as
+    ``chargingStation``. Coordinates come from the backend as stored: a few records have latitude and longitude
+    swapped.
+    """
 
     evse_id: str | None
     id: str | None = None
+    name: str | None = None
     partner: str | None = None
     operator_name: str | None = None
     operator_id: str | None = None
+    status: str | None = None
+    """Live status from the operator: ``Available``, ``Occupied``, ``OutOfService``, ``Unknown``, …"""
+    distance_m: float | None = None
+    """Distance from the searched point, in metres (nearby search only)."""
     address: Address | None = None
     latitude: float | None = None
     longitude: float | None = None
     plugs: list[str] = field(default_factory=list)
+    facilities: list[ChargingFacility] = field(default_factory=list)
+    is_open_24h: bool | None = None
     pricing: Pricing | None = None
     raw: dict[str, Any] = field(default_factory=dict, repr=False)
+
+    @property
+    def max_power_kw(self) -> float | None:
+        powers = [f.power_kw for f in self.facilities if f.power_kw is not None]
+        return max(powers) if powers else None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Evse:
         evse_data = _dict(data.get("EvseData"))
         coords = _dict(_dict(evse_data.get("GeoCoordinates")).get("DecimalDegree"))
         plugs = evse_data.get("Plugs")
+        facilities = evse_data.get("ChargingFacilities")
+        names = evse_data.get("ChargingStationNames")
+        name = next((n.get("value") for n in names if isinstance(n, dict) and n.get("value")), None) if names else None
         return cls(
             evse_id=_str(data.get("EvseID") or data.get("evseId") or evse_data.get("EvseID")),
             id=_str(data.get("_id")),
+            name=_str(name),
             partner=_str(data.get("partner")),
             operator_name=_str(evse_data.get("OperatorName") or data.get("OperatorName")),
             operator_id=_str(evse_data.get("OperatorID") or data.get("OperatorID")),
+            status=_str(data.get("status")),
+            distance_m=_float(data.get("distance")),
             address=Address.from_dict(evse_data.get("Address")),
             latitude=_float(coords.get("Latitude")),
             longitude=_float(coords.get("Longitude")),
             plugs=[str(p) for p in plugs] if isinstance(plugs, list) else [],
+            facilities=[ChargingFacility.from_dict(f) for f in facilities if isinstance(f, dict)]
+            if isinstance(facilities, list)
+            else [],
+            is_open_24h=_bool(evse_data.get("IsOpen24Hours")),
             pricing=Pricing.from_dict(data.get("pricing") or data.get("pricingDetails")),
             raw=data,
         )

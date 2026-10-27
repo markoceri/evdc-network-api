@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from .const import DEFAULT_PAGE_SIZE
+from .const import DEFAULT_NEARBY_RADIUS_M, DEFAULT_PAGE_SIZE, NEARBY_PAGE_SIZE
 
 if TYPE_CHECKING:
     from .client import EvdcApiClient
@@ -59,3 +59,21 @@ class AsyncEvdcApiClient:
 
     async def get_evse(self, evse_id: str) -> Evse:
         return await asyncio.to_thread(self._client.get_evse, evse_id)
+
+    async def get_nearby_stations(
+        self, latitude: float, longitude: float, page: int = 1, page_size: int = NEARBY_PAGE_SIZE
+    ) -> list[Evse]:
+        return await asyncio.to_thread(self._client.get_nearby_stations, latitude, longitude, page, page_size)
+
+    async def find_stations_near(
+        self,
+        latitude: float,
+        longitude: float,
+        *,
+        radius_m: float = DEFAULT_NEARBY_RADIUS_M,
+        max_results: int | None = None,
+    ) -> list[Evse]:
+        """Charging points within *radius_m* metres of a point, nearest first (see the sync client)."""
+        return await asyncio.to_thread(
+            lambda: self._client.find_stations_near(latitude, longitude, radius_m=radius_m, max_results=max_results)
+        )

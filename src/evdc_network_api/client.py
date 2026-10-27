@@ -14,10 +14,15 @@ from .const import (
     DEFAULT_APP_VERSION,
     DEFAULT_BASE_URL,
     DEFAULT_DEVICE_MODEL,
+    DEFAULT_NEARBY_RADIUS_M,
     DEFAULT_PAGE_SIZE,
     DEFAULT_TIMEOUT,
+    MAX_NEARBY_PAGE_SIZE,
+    NEARBY_PAGE_SIZE,
+    NEARBY_SEARCH_PAGE_SIZE,
     PATH_CHARGE_HISTORY,
     PATH_EVSE,
+    PATH_NEARBY,
     PATH_ONGOING_SESSIONS,
     PATH_PROFILE,
     PATH_RECEIPT,
@@ -226,6 +231,64 @@ class EvdcApiClient:
                 break
         return Evse.from_dict(payload)
 
+    def get_nearby_stations(
+        self, latitude: float, longitude: float, page: int = 1, page_size: int = NEARBY_PAGE_SIZE
+    ) -> list[Evse]:
+        """Fetch one page of charging points around a point, nearest first, with their price and live status.
+
+        Each item is one connector (EVSE); a station with two sockets appears twice. ``distance_m`` is the
+        distance from the point. The backend has no radius: use :meth:`find_stations_near` to stop at one.
+        """
+        _check_coordinates(latitude, longitude)
+        if page < 1:
+            raise ValueError("page must be >= 1")
+        if not 1 <= page_size <= MAX_NEARBY_PAGE_SIZE:
+            raise ValueError(f"page_size must be between 1 and {MAX_NEARBY_PAGE_SIZE}")
+        path = PATH_NEARBY.format(longitude=_coordinate(longitude), latitude=_coordinate(latitude))
+        body = self._authed("GET", path, params={"page": page, "pageSize": page_size})
+        return [Evse.from_dict(item) for item in _items(body)]
+
+    def find_stations_near(
+        self,
+        latitude: float,
+        longitude: float,
+        *,
+        radius_m: float = DEFAULT_NEARBY_RADIUS_M,
+        max_results: int | None = None,
+    ) -> list[Evse]:
+        """Charging points within *radius_m* metres of a point (e.g. the vehicle), nearest first.
+
+        The backend has no radius parameter: pages are read nearest first and the walk stops at the first result
+        farther than *radius_m*, at the last page, or after *max_results* results when given. The radius is what
+        bounds the number of requests, so keep it to the area around one location rather than sweeping a region.
+        """
+        if radius_m <= 0:
+            raise ValueError("radius_m must be positive")
+        if max_results is not None and max_results < 1:
+            raise ValueError("max_results must be >= 1")
+        results: list[Evse] = []
+        seen: set[str] = set()
+        page = 1
+        while True:
+            batch = self.get_nearby_stations(latitude, longitude, page=page, page_size=NEARBY_SEARCH_PAGE_SIZE)
+            added = 0
+            for evse in batch:
+                if evse.distance_m is not None and evse.distance_m > radius_m:
+                    return results
+                key = evse.evse_id or evse.id
+                if key is not None and key in seen:
+                    continue
+                if key is not None:
+                    seen.add(key)
+                results.append(evse)
+                added += 1
+                if max_results is not None and len(results) >= max_results:
+                    return results
+            # A short page is the last one; a page with nothing new means the backend is not paging further.
+            if len(batch) < NEARBY_SEARCH_PAGE_SIZE or not added:
+                return results
+            page += 1
+
     # ------------------------------------------------------------------
     # HTTP
     # ------------------------------------------------------------------
@@ -309,6 +372,18 @@ def _items(body: Any) -> list[dict[str, Any]]:
         if isinstance(candidate, list):
             return [item for item in candidate if isinstance(item, dict)]
     return []
+
+
+def _check_coordinates(latitude: float, longitude: float) -> None:
+    if not -90 <= latitude <= 90:
+        raise ValueError(f"latitude out of range: {latitude}")
+    if not -180 <= longitude <= 180:
+        raise ValueError(f"longitude out of range: {longitude}")
+
+
+def _coordinate(value: float) -> str:
+    """Decimal degrees without scientific notation, 6 decimals (~0.1 m)."""
+    return f"{value:.6f}"
 
 
 def _error_message(body: Any, status_code: int) -> str:
