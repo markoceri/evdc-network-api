@@ -184,11 +184,13 @@ class EvdcApiClient:
         """
         pending = self._require_pending_two_factor()
         if pending.method == TWO_FACTOR_METHOD_TOTP:
+            # The TOTP endpoint authenticates with the pre-2FA token held from the login step; e-mail does not.
             body = self._request(
                 "POST",
                 PATH_TOTP_LOGIN,
                 json={"email": self.email, "totpCode": code},
                 auth=False,
+                bearer=pending.access_token,
                 error_cls=EvdcAuthError,
             )
         else:
@@ -209,6 +211,7 @@ class EvdcApiClient:
             PATH_TOTP_RECOVERY_LOGIN,
             json={"email": self.email, "recoveryCode": code},
             auth=False,
+            bearer=pending.access_token,
             error_cls=EvdcAuthError,
         )
         return self._complete_two_factor(body, pending)
@@ -433,7 +436,7 @@ class EvdcApiClient:
             self._reauthenticate()
             return self._request(method, path, **kwargs)
 
-    def _headers(self, *, auth: bool) -> dict[str, str]:
+    def _headers(self, *, auth: bool, bearer: str | None = None) -> dict[str, str]:
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
@@ -443,8 +446,10 @@ class EvdcApiClient:
             "x-app-version": self.app_version,
             "x-request-id": str(uuid.uuid4()),
         }
-        if auth and self.access_token:
-            headers["Authorization"] = f"Bearer {self.access_token}"
+        # ``bearer`` sends a specific token (e.g. the held pre-2FA token for TOTP) regardless of the session state.
+        token = bearer or (self.access_token if auth else None)
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
             if self.user_id:
                 headers["x-user-id"] = self.user_id
         return headers
@@ -457,13 +462,19 @@ class EvdcApiClient:
         params: dict[str, Any] | None = None,
         json: dict[str, Any] | None = None,
         auth: bool = True,
+        bearer: str | None = None,
         error_cls: type[EvdcApiError] = EvdcApiError,
         allow_empty: bool = False,
     ) -> Any:
         url = self.base_url + path.lstrip("/")
         try:
             resp = self.session.request(
-                method, url, headers=self._headers(auth=auth), params=params, json=json, timeout=self.timeout
+                method,
+                url,
+                headers=self._headers(auth=auth, bearer=bearer),
+                params=params,
+                json=json,
+                timeout=self.timeout,
             )
         except requests.RequestException as exc:
             raise EvdcApiError(f"HTTP request failed: {type(exc).__name__}") from exc
