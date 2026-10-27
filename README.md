@@ -82,6 +82,11 @@ with EvdcApiClient(email="you@example.com", password="...") as client:
         print("charging on", ongoing.evse_id, "since", ongoing.created_at)
 
     receipt = client.get_receipt(session_id)  # PDF bytes in receipt.content
+
+    for wallet in client.get_wallets():
+        print(wallet.currency, wallet.balance)  # e.g. EUR 41.97, and the EVDC Token wallet
+    for txn in client.iter_wallet_transactions():
+        print(txn.created_at, txn.amount, txn.currency, txn.session_id)  # session_id links a payment to a session
 ```
 
 Charging points around a position (for example the vehicle's), nearest first, with live status and prices:

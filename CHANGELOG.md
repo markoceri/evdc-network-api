@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   billed station.
 - `get_ongoing_sessions()` → `list[OngoingSession]` (still reconstructed from the app), `get_receipt(session_id)` →
   `Receipt` (decoded PDF, verified: the filename is `<invoiceNo>.pdf`) and `get_evse(evse_id)` → `Evse` (verified).
+- Read-only wallet access, verified on a real account: `get_wallets()` → `list[Wallet]` (balance per currency,
+  including the `EVDC Token` wallet) and `get_wallet_transactions()` / `iter_wallet_transactions()` →
+  `WalletHistoryPage` of `WalletTransaction` (signed amount, running balances, and `session_id` linking a payment to
+  its charging session). Top-ups and transfers are out of scope.
 - Connected sessions / devices, on both clients: `get_connected_sessions()` → `list[ConnectedSession]`,
   `revoke_session(id)` and `revoke_all_sessions()` (`GET` / `DELETE /api/user-sessions`), verified against the real
   backend. A session is created per `x-device-id`, so pass a stable `device_id` to stay a single device.

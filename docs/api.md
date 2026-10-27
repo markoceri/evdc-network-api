@@ -192,6 +192,23 @@ keys live data by `evseId`, so each ongoing session presumably carries one.
 
 Session lifecycle states seen in the client: `SESSION_STARTED`, `SESSION_STOPPED`, `SESSION_PAID`, `SESSION_FAILED`.
 
+## Wallet (read-only) — **verified**
+
+The account's balances and the movements that paid for charging, in EUR and in the `EVDC Token` wallet.
+
+- **Balances** — `GET /api/wallet/user/wallets` → `{ "result": { "data": [ Wallet ], "count" } }`. Each wallet:
+  `_id`, `balance`, `currency`, `isPrimary`, `isToken`, and `currencyDetails` (`name`, `symbol`, `decimals`,
+  `type` = `FIAT` / `TOKEN`).
+- **Transactions** — `GET /api/wallet/history?page=&limit=&currency=&isToken=` →
+  `{ "data": [ Transaction ], "total", "page", "limit", "totalPages", "balances": [ { currency, closingBalance } ] }`.
+  Each transaction: `transactionAmount` (signed — negative for a payment, positive for a top-up), `currency`,
+  `description`, `category` (e.g. `charging`, `transfer`), `isToken`, `oldBalance`, `newBalance`, `createdAt`, and
+  `metaData.sessionId` linking a charging payment to its session.
+- Currencies reference: `GET /api/wallet/currencies`.
+
+The client exposes `get_wallets()`, `get_wallet_transactions()` and `iter_wallet_transactions()`. Top-ups, transfers
+and setting the primary wallet are write operations and are out of scope.
+
 ## Real-time session progress (socket.io)
 
 The app opens a socket.io connection to receive live progress of ongoing sessions.
