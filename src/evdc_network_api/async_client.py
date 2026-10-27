@@ -36,6 +36,20 @@ class AsyncEvdcApiClient:
     async def login(self) -> User:
         return await asyncio.to_thread(self._client.login)
 
+    @property
+    def two_factor_pending(self) -> str | None:
+        """The pending second factor (``"email"`` / ``"totp"``), or ``None``."""
+        return self._client.two_factor_pending
+
+    async def verify_two_factor(self, code: str) -> User:
+        return await asyncio.to_thread(self._client.verify_two_factor, code)
+
+    async def verify_recovery_code(self, code: str) -> User:
+        return await asyncio.to_thread(self._client.verify_recovery_code, code)
+
+    async def resend_two_factor_code(self) -> None:
+        await asyncio.to_thread(self._client.resend_two_factor_code)
+
     async def token_refresh(self) -> None:
         await asyncio.to_thread(self._client.token_refresh)
 

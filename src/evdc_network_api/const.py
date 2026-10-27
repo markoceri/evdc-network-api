@@ -28,6 +28,11 @@ EQIDAQAB
 PATH_SIGN_IN = "api/signIn-enc"
 PATH_REFRESH_TOKEN = "api/refresh-token"  # noqa: S105 - a URL path, not a secret
 PATH_SIGN_OUT = "api/signOut"
+# Two-factor verification endpoints.
+PATH_VERIFY_OTP = "api/verifyOTP"  # noqa: S105 - a URL path, not a secret
+PATH_RESEND_CODE = "api/resendVerificationCode"  # noqa: S105 - a URL path, not a secret
+PATH_TOTP_LOGIN = "api/2fa/totp/login"  # noqa: S105 - a URL path, not a secret
+PATH_TOTP_RECOVERY_LOGIN = "api/2fa/totp/recovery-login"  # noqa: S105 - a URL path, not a secret
 PATH_PROFILE = "api/profile"
 PATH_CHARGE_HISTORY = "api/hubject/charge-history"
 PATH_RECEIPT = "api/hubject/download-pdf/{session_id}"
@@ -44,6 +49,10 @@ NEARBY_PAGE_SIZE = 10
 NEARBY_SEARCH_PAGE_SIZE = 50
 MAX_NEARBY_PAGE_SIZE = 100
 DEFAULT_NEARBY_RADIUS_M = 2000
+
+# Two-factor method values the backend reports in ``twoFactorMethod``.
+TWO_FACTOR_METHOD_EMAIL = "email"
+TWO_FACTOR_METHOD_TOTP = "totp"
 
 # socket.io event names.
 SOCKET_EVENT_REGISTER = "register"

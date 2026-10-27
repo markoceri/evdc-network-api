@@ -19,4 +19,13 @@ class EvdcAuthError(EvdcApiError):
 
 
 class EvdcTwoFactorRequiredError(EvdcAuthError):
-    """The account has two-factor authentication enabled, which this library does not support yet."""
+    """The account has two-factor authentication enabled and the login needs a verification code.
+
+    Complete the login with :meth:`EvdcApiClient.verify_two_factor` (or
+    :meth:`EvdcApiClient.verify_recovery_code`). ``method`` is the factor the backend asks for,
+    ``"email"`` (a one-time code sent by e-mail) or ``"totp"`` (an authenticator app).
+    """
+
+    def __init__(self, message: str, *, method: str | None = None, status_code: int | None = None) -> None:
+        super().__init__(message, status_code=status_code)
+        self.method = method

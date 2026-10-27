@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import secrets
 import uuid
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Self
 from urllib.parse import quote
 
@@ -27,8 +28,14 @@ from .const import (
     PATH_PROFILE,
     PATH_RECEIPT,
     PATH_REFRESH_TOKEN,
+    PATH_RESEND_CODE,
     PATH_SIGN_IN,
+    PATH_TOTP_LOGIN,
+    PATH_TOTP_RECOVERY_LOGIN,
+    PATH_VERIFY_OTP,
     REQ_SCOPE,
+    TWO_FACTOR_METHOD_EMAIL,
+    TWO_FACTOR_METHOD_TOTP,
 )
 from .crypto import encrypt_password
 from .exceptions import EvdcApiError, EvdcAuthError, EvdcTwoFactorRequiredError
@@ -39,6 +46,20 @@ if TYPE_CHECKING:
     from types import TracebackType
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@dataclass(slots=True)
+class _PendingTwoFactor:
+    """A login waiting for a verification code.
+
+    ``method`` is ``"email"`` or ``"totp"``. Any tokens returned by the login step are held here and only promoted
+    to the active session once the verification code is accepted, so the library never uses a session while
+    two-factor verification is still pending.
+    """
+
+    method: str
+    access_token: str | None
+    refresh_token: str | None
 
 
 class EvdcApiClient:
@@ -80,6 +101,7 @@ class EvdcApiClient:
         self.session = session or requests.Session()
         self.on_tokens_updated = on_tokens_updated
         self.user_id: str | None = None
+        self._pending_two_factor: _PendingTwoFactor | None = None
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(email={self.email!r}, base_url={self.base_url!r}, logged_in={self.logged_in})"
@@ -112,7 +134,11 @@ class EvdcApiClient:
     # ------------------------------------------------------------------
 
     def login(self) -> User:
-        """Log in with email and password and return the account."""
+        """Log in with email and password and return the account.
+
+        When the account has two-factor authentication enabled, this raises :class:`EvdcTwoFactorRequiredError`
+        without activating the session; complete it with :meth:`verify_two_factor`.
+        """
         if not self._password:
             raise EvdcAuthError("A password is required to log in.")
         body = self._request(
@@ -123,15 +149,100 @@ class EvdcApiClient:
             error_cls=EvdcAuthError,
         )
         data = _dict(body.get("data")) or _dict(body)
+        # Respect the second factor: hold any tokens the login returns and activate the session only after the
+        # verification code is accepted (see verify_two_factor).
+        if data.get("isTwoFactorEnabled") or data.get("twoFactorMethod"):
+            method = _str(data.get("twoFactorMethod")) or TWO_FACTOR_METHOD_EMAIL
+            self.access_token = None
+            self._pending_two_factor = _PendingTwoFactor(
+                method=method,
+                access_token=_str(data.get("accessToken")),
+                refresh_token=_str(data.get("refreshToken")),
+            )
+            _LOGGER.debug("EVDC login needs a two-factor code (method=%s)", method)
+            raise EvdcTwoFactorRequiredError(f"The account requires two-factor verification ({method}).", method=method)
         access_token = data.get("accessToken")
         if not access_token:
-            if data.get("isTwoFactorEnabled") or data.get("twoFactorMethod"):
-                raise EvdcTwoFactorRequiredError("The account requires two-factor authentication.")
             raise EvdcAuthError("Login response has no access token.")
+        self._pending_two_factor = None
         self._set_tokens(str(access_token), _str(data.get("refreshToken")))
         user = User.from_dict(data)
         self.user_id = user.id
         _LOGGER.debug("EVDC login succeeded")
+        return user
+
+    @property
+    def two_factor_pending(self) -> str | None:
+        """The pending second factor (``"email"`` / ``"totp"``), or ``None`` if none is awaiting a code."""
+        return self._pending_two_factor.method if self._pending_two_factor else None
+
+    def verify_two_factor(self, code: str) -> User:
+        """Complete a login pending two-factor verification with the code the backend asked for.
+
+        Use the e-mail one-time code for the ``"email"`` factor, or the authenticator code for ``"totp"``.
+        """
+        pending = self._require_pending_two_factor()
+        if pending.method == TWO_FACTOR_METHOD_TOTP:
+            body = self._request(
+                "POST",
+                PATH_TOTP_LOGIN,
+                json={"email": self.email, "totpCode": code},
+                auth=False,
+                error_cls=EvdcAuthError,
+            )
+        else:
+            body = self._request(
+                "POST",
+                PATH_VERIFY_OTP,
+                json={"email": self.email, "otp": code, "isTwoFactorEnabled": True},
+                auth=False,
+                error_cls=EvdcAuthError,
+            )
+        return self._complete_two_factor(body, pending)
+
+    def verify_recovery_code(self, code: str) -> User:
+        """Complete a pending TOTP login with a recovery code instead of the authenticator code."""
+        pending = self._require_pending_two_factor()
+        body = self._request(
+            "POST",
+            PATH_TOTP_RECOVERY_LOGIN,
+            json={"email": self.email, "recoveryCode": code},
+            auth=False,
+            error_cls=EvdcAuthError,
+        )
+        return self._complete_two_factor(body, pending)
+
+    def resend_two_factor_code(self) -> None:
+        """Ask the backend to send the e-mail verification code again."""
+        self._require_pending_two_factor()
+        self._request(
+            "POST",
+            PATH_RESEND_CODE,
+            json={"email": self.email, "isForgotPassword": False},
+            auth=False,
+            error_cls=EvdcAuthError,
+        )
+
+    def _require_pending_two_factor(self) -> _PendingTwoFactor:
+        if self._pending_two_factor is None:
+            raise EvdcAuthError("No two-factor verification is pending; log in first.")
+        return self._pending_two_factor
+
+    def _complete_two_factor(self, body: dict[str, Any], pending: _PendingTwoFactor) -> User:
+        """Activate the session once a verification succeeds, from the response tokens or the held ones.
+
+        The verification responses carry the user and fresh tokens under different keys: ``verifyOTP`` nests them in
+        ``user``, the TOTP endpoints in ``data``. Fall back to the tokens held from the login step if neither is set.
+        """
+        data = _dict(body.get("data")) or _dict(body.get("user")) or _dict(body)
+        access_token = _str(data.get("accessToken")) or pending.access_token
+        if not access_token:
+            raise EvdcAuthError("Two-factor verification returned no access token.")
+        self._pending_two_factor = None
+        self._set_tokens(access_token, _str(data.get("refreshToken")) or pending.refresh_token)
+        user = User.from_dict(data) if data.get("email") else self.get_profile()
+        self.user_id = user.id or self.user_id
+        _LOGGER.debug("EVDC two-factor verification succeeded")
         return user
 
     def token_refresh(self) -> None:
