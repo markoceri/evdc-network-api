@@ -496,6 +496,43 @@ def test_revoke_all_sessions(fake_session: FakeSession) -> None:
 
 WALLETS = "api/wallet/user/wallets"
 WALLET_HISTORY = "api/wallet/history"
+FAVOURITES = "api/favourite/stations"
+NOTIFICATIONS = "api/notification/"
+
+
+def test_get_favourite_stations(fake_session: FakeSession) -> None:
+    fake_session.add("GET", FAVOURITES, _ok(load_fixture("favourite_stations")))
+
+    stations = _client(fake_session, access_token="token").get_favourite_stations()
+
+    assert len(stations) == 1
+    evse = stations[0]
+    assert evse.evse_id == "IT*TST*E0009*1"
+    assert evse.status == "Available"
+    assert evse.operator_name == "Test Charging Srl"
+    assert evse.max_power_kw == 90
+    assert evse.address is not None
+    assert evse.address.city == "Torino"
+
+
+def test_get_notifications(fake_session: FakeSession) -> None:
+    fake_session.add("GET", NOTIFICATIONS, _ok(load_fixture("notifications")))
+
+    page = _client(fake_session, access_token="token").get_notifications(page=1, limit=10)
+
+    assert page.total == 2
+    assert page.page == 1
+    assert [n.type for n in page.notifications] == ["SESSION_PAID", "WALLET_TOPUP"]
+    assert page.notifications[0].read is False
+    assert page.notifications[0].title == "Charging complete"
+    assert fake_session.calls[0].params == {"page": 1, "limit": 10, "success": "true"}
+
+
+def test_count_unread_notifications(fake_session: FakeSession) -> None:
+    fake_session.add("GET", NOTIFICATIONS, _ok(load_fixture("notifications")))
+
+    assert _client(fake_session, access_token="token").count_unread_notifications() == 1
+    assert fake_session.calls[0].params == {"page": 1, "limit": 50, "success": "true"}
 
 
 def test_get_wallets(fake_session: FakeSession) -> None:
@@ -531,7 +568,7 @@ def test_get_wallet_transactions_filters(fake_session: FakeSession) -> None:
 
     _client(fake_session, access_token="token").get_wallet_transactions(currency="EUR", is_token=False)
 
-    assert fake_session.calls[0].params == {"page": 1, "limit": 10, "currency": "EUR", "isToken": False}
+    assert fake_session.calls[0].params == {"page": 1, "limit": 10, "currency": "EUR", "isToken": "false"}
 
 
 def test_iter_wallet_transactions_stops_at_last_page(fake_session: FakeSession) -> None:

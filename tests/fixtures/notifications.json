@@ -1,0 +1,32 @@
+{
+  "result": {
+    "status": true,
+    "data": {
+      "data": [
+        {
+          "_id": "6a0000000000000000000001",
+          "userId": "660000000000000000000099",
+          "type": "SESSION_PAID",
+          "title": "Charging complete",
+          "body": "Your charging session cost 6.05 EUR.",
+          "success": true,
+          "read": false,
+          "createdAt": "2026-01-11T20:10:00.000Z"
+        },
+        {
+          "_id": "6a0000000000000000000002",
+          "userId": "660000000000000000000099",
+          "type": "WALLET_TOPUP",
+          "title": "Wallet topped up",
+          "body": "Your wallet was topped up by 50 EUR.",
+          "success": true,
+          "read": true,
+          "createdAt": "2026-01-10T09:00:00.000Z"
+        }
+      ],
+      "total": 2,
+      "currentPage": 1,
+      "totalPages": 1
+    }
+  }
+}

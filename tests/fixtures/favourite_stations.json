@@ -1,0 +1,25 @@
+{
+  "result": {
+    "data": [
+      {
+        "_id": "690000000000000000000001",
+        "EvseID": "IT*TST*E0009*1",
+        "user": "660000000000000000000099",
+        "isFavourite": true,
+        "status": "Available",
+        "station_data": {
+          "EvseID": "IT*TST*E0009*1",
+          "OperatorName": "Test Charging Srl",
+          "OperatorID": "IT*TST",
+          "Address": { "Street": "Via Verdi 9", "City": "Torino", "PostalCode": "10100", "Country": "ITA" },
+          "GeoCoordinates": { "DecimalDegree": { "Latitude": "45.0703", "Longitude": "7.6869" } },
+          "ChargingFacilities": [ { "Power": 90, "PowerType": "DC", "Voltage": 400, "Amperage": 225 } ],
+          "Plugs": [ "CCSCombo2Plug" ],
+          "IsOpen24Hours": true,
+          "ChargingStationNames": [ { "lang": "en", "value": "Test Station Torino" } ]
+        }
+      }
+    ],
+    "count": 1
+  }
+}
