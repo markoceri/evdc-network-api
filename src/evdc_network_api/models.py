@@ -285,10 +285,16 @@ class ChargingSession:
     id: str | None = None
     invoice_no: str | None = None
     created_at: datetime | None = None
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
     amount: float | None = None
     currency: str | None = None
     energy_kwh: float | None = None
     operator: str | None = None
+    is_paid: bool | None = None
+    is_stopped: bool | None = None
+    is_failed: bool | None = None
+    is_test_session: bool | None = None
     charging_duration_minutes: float | None = None
     time_fee: float | None = None
     parking_duration_minutes: float | None = None
@@ -306,6 +312,7 @@ class ChargingSession:
         pricing = _dict(data.get("pricingDetails"))
         time_details = _dict(data.get("timeDetails"))
         parking = _dict(data.get("parkingDetails"))
+        notifications = _dict(data.get("notificationDetails"))
         station = data.get("chargingStation")
         energy = data.get("consumedEnergy")
         return cls(
@@ -314,10 +321,16 @@ class ChargingSession:
             id=_str(data.get("_id")),
             invoice_no=_str(data.get("invoiceNo")),
             created_at=_datetime(data.get("createdAt")),
+            started_at=_datetime(notifications.get("chargingStart")),
+            ended_at=_datetime(notifications.get("chargingEnd") or notifications.get("sessionEnd")),
             amount=_float(data.get("amount")),
             currency=_str(data.get("currency")),
             energy_kwh=_float(energy if energy is not None else pricing.get("consumedEnergy")),
             operator=_str(data.get("operator")),
+            is_paid=_bool(data.get("isPaid")),
+            is_stopped=_bool(data.get("isStop")),
+            is_failed=_bool(data.get("isSessionFailed")),
+            is_test_session=_bool(data.get("isTestSession")),
             charging_duration_minutes=_float(time_details.get("durationInMinutes")),
             time_fee=_float(time_details.get("timeFee")),
             parking_duration_minutes=_float(parking.get("durationInMinutes")),
