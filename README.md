@@ -76,7 +76,9 @@ from evdc_network_api import EvdcApiClient
 
 with EvdcApiClient(email="you@example.com", password="...") as client:
     for session in client.iter_charge_history():
-        print(session.created_at, session.energy_kwh, "kWh", session.amount, session.currency, session.evse_id)
+        print(session.created_at, session.energy_kwh, "kWh", session.evse_id)
+        print("  paid:", session.amount, session.currency)  # tokens, if the session was paid with EVDC Tokens
+        print("  cost:", session.cost, session.cost_currency)  # always real money, even for a token-paid session
 
     for ongoing in client.get_ongoing_sessions():
         print("charging on", ongoing.evse_id, "since", ongoing.created_at)
