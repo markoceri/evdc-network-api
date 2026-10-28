@@ -3,9 +3,9 @@
 Notes on the interface between the official EVDC Android app and its backend, collected for interoperability
 (see [LEGAL.md](../LEGAL.md)). Only what is needed to read the authenticated user's own data is documented here.
 
-> Status: request shapes come from the decompiled client. Login, token refresh, profile, system configuration and
-> the history / ongoing-session envelopes are **verified** against the real backend (2026-10-27, on an account with
-> no charging history). Everything marked *inferred* still needs a real charging session to be confirmed.
+> Status: request shapes come from the decompiled client. Login, token refresh, profile, system configuration, the
+> history / ongoing-session envelopes, the history items, the receipt and the EVSE detail are **verified** against the
+> real backend. Everything marked *inferred* (e.g. an ongoing session) is still to be confirmed.
 
 ## Source
 
@@ -86,7 +86,7 @@ login is completed with a verification code before the session is used. The meth
 | `totp` | `POST /api/2fa/totp/login` | `{ "email", "totpCode" }` |
 | `totp` (recovery) | `POST /api/2fa/totp/recovery-login` | `{ "email", "recoveryCode" }` |
 
-Both methods are **verified** on real accounts. The two endpoints differ in how they authenticate and where they
+Both methods are **verified** against the real backend. The two endpoints differ in how they authenticate and where they
 put the tokens:
 
 - **`email`** — `POST /api/verifyOTP` is **unauthenticated** (no bearer). A correct code returns HTTP 200 with the
@@ -176,7 +176,7 @@ Query parameters: `page` (1-based) and `limit`.
 
 Response envelope (**verified**): `{ "page", "limit", "totalPages", "totalDocuments", "data": [ … ] }`. The item
 fields are in [ChargingSession](#chargingsession--history-item-get-apihubjectcharge-history--data), now **verified**
-on a real account. Notable: `consumedEnergy` (kWh); `timeDetails` (`durationInMinutes`), `invoiceNo` (which equals
+against the real backend. Notable: `consumedEnergy` (kWh); `timeDetails` (`durationInMinutes`), `invoiceNo` (which equals
 the receipt filename) and `notificationDetails` (`chargingStart` / `chargingEnd`) give the timing; status is in
 `isPaid` / `isStop` / `isSessionFailed` / `isTestSession`.
 
@@ -280,7 +280,7 @@ Only reading the user's own session is in scope. Remote start/stop and connector
 
 ### Nearby charging points — `GET /api/hubject/nearby/{longitude}/{latitude}`
 
-Used by the app's "near me" list. **Verified on 2026-10-27.**
+Used by the app's "near me" list. **Verified.**
 
 - **Longitude first** in the path (GeoJSON order). With the values swapped the search runs around a different point
   and returns far-away results, so the order matters.
@@ -314,7 +314,7 @@ EVDC's own.
 
 ### Response envelopes
 
-**Verified against real responses on 2026-10-27** (fresh account, so session lists were empty). Envelopes are **not
+**Verified against real responses.** Envelopes are **not
 uniform** — each endpoint has its own shape:
 
 | Endpoint | Envelope |
@@ -369,9 +369,9 @@ where `value` is `{ whitelisted: {status, userIds[]}, blacklisted: {status, user
 `Show_Route_Planner`, `testmode`, `Wallet_V2`, `Wallet_ShowCard`, `Show_Rfid_Orders`, `Show_Skip_2FA`,
 `Show_Email_2FA`. Not needed to read sessions; kept for reference.
 
-> **Verified on a real account:** `ChargingSession` (history item), the receipt PDF payload and the `Evse` detail
-> (`GET /api/hubject/{evseId}` → `{ "result": { … } }`). `OngoingSession` is still inferred (no session was running
-> during the check). `ChargingSession` nests the applied tariff in `pricingDetails`, the billed station in
+> **Verified against the real backend:** `ChargingSession` (history item), the receipt PDF payload and the `Evse` detail
+> (`GET /api/hubject/{evseId}` → `{ "result": { … } }`). `OngoingSession` is still inferred (not yet confirmed
+> against a running session). `ChargingSession` nests the applied tariff in `pricingDetails`, the billed station in
 > `chargingStation` (same `EvseData` shape as the EVSE detail) and its address in `evseDetails`.
 
 ### ChargingSession — history item (`GET /api/hubject/charge-history` → `data[]`)
