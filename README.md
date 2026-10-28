@@ -182,7 +182,8 @@ The private key is a long-term login credential that bypasses two-factor: store 
 it leaks.
 
 An async wrapper is available as `AsyncEvdcApiClient(client)`, and live progress of an ongoing session as
-`evdc_network_api.live.EvdcLiveClient`. See [`examples/`](examples/) and the API notes in [`docs/api.md`](docs/api.md).
+`evdc_network_api.live.EvdcLiveClient`. See [`examples/`](examples/), the library reference in [`docs/library.md`](docs/library.md) and the
+backend notes in [`docs/api.md`](docs/api.md).
 
 ## Legal
 
