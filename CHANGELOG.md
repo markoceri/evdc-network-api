@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   number, status flags (`is_paid` / `is_stopped` / `is_failed` / `is_test_session`), the applied tariff and the
   billed station. `cost` / `cost_currency` give the real-money price even when `amount` / `currency` is in tokens,
   with `token_conversion_rate` relating the two.
-- `get_ongoing_sessions()` → `list[OngoingSession]` (still reconstructed from the app), `get_receipt(session_id)` →
+- `get_ongoing_sessions()` → `list[OngoingSession]` (verified on a real charge), `get_receipt(session_id)` →
   `Receipt` (decoded PDF, verified: the filename is `<invoiceNo>.pdf`) and `get_evse(evse_id)` → `Evse` (verified).
 - Read-only wallet access, verified on a real account: `get_wallets()` → `list[Wallet]` (balance per currency,
   including the `EVDC Token` wallet) and `get_wallet_transactions()` / `iter_wallet_transactions()` →
@@ -46,7 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   client built with `device_key` + `user_id` uses this path automatically. Keep the private key outside the
   repository, like the tokens.
 - `EvdcLiveClient` (`live` extra, `python-socketio`): live `chargingSessionProgress` updates as `SessionProgress`,
-  with token refresh on socket authentication errors. Not yet tested on a real session.
+  with token refresh on socket authentication errors. Verified on a real charge: events carry `SessionID`, the
+  consumed energy and the timeline, about every 5 minutes, with no power or current on the observed station.
 - Two-factor login. When an account has 2FA enabled, `login()` raises `EvdcTwoFactorRequiredError` (carrying the
   `method`, `email` or `totp`) without activating the session, and the login is completed with `verify_two_factor()`,
   `verify_recovery_code()` or `resend_two_factor_code()`. The session is activated only after the code is verified.

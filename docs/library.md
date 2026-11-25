@@ -255,7 +255,9 @@ Datetimes are timezone-aware UTC.
 
 ### `OngoingSession`
 
-`session_id`, `evse_id`, `amount`, `currency`, `created_at`, `is_paid`, `is_stop`, `raw`.
+`session_id`, `evse_id`, `amount` (0 while charging), `currency`, `created_at`, `updated_at`, `is_paid`, `is_stop`,
+`is_charging_started`, `is_failed`, `invoice_no`, `operator`, `protocol`, `charging_start`, `cost_per_kwh`,
+`pre_auth_amount`, `raw`. Verified on a real charge; energy and cost are not available until the session ends.
 
 ### `Receipt`
 
@@ -306,10 +308,10 @@ A tariff per `unit` (e.g. `kWh`) in `currency`: `price` (wallet/token price, the
 
 ### `SessionProgress`
 
-Live progress update (`evse_id`, `time`, `session_start`, `charging_start`, `power_kw`, `max_power_kw`, `current_a`,
-`max_current_a`, `energy_import_kwh`, `energy_export_kwh`, `consumed_energy_kwh`, `raw`, …). Match it to an
-`OngoingSession` through `evse_id`, not the session id. Units follow the app's labels and are not confirmed on real
-events. Delivered by [`EvdcLiveClient`](#live-progress).
+Live progress update, verified on a real charge (`session_id`, `evse_id`, `operator_id`, `event_type`, `time`,
+`charging_start`, `consumed_energy_kwh`, `meter_value_start_kwh`, `timeline`, `raw`, plus `power_kw`, `current_a` and
+related fields that stay `None` on stations that do not report them). Match it to an `OngoingSession` through
+`session_id`. The observed station sent an event about every 5 minutes with energy in kWh and no power. Delivered by [`EvdcLiveClient`](#live-progress).
 
 ## Live progress
 

@@ -5,7 +5,8 @@ Notes on the interface between the official EVDC Android app and its backend, co
 
 > Status: request shapes come from the decompiled client. Login, token refresh, profile, system configuration, the
 > history / ongoing-session envelopes, the history items, the receipt and the EVSE detail are **verified** against the
-> real backend. Everything marked *inferred* (e.g. an ongoing session) is still to be confirmed.
+> real backend. The ongoing-session item and the socket progress event are verified on a real charge too. Everything marked
+> *inferred* is still to be confirmed.
 
 ## Source
 
@@ -196,8 +197,22 @@ and the decoded bytes are a real PDF.
 ### Ongoing sessions — `GET /api/hubject/ongoing-sessionsV2`
 
 No parameters. Returns the user's sessions that are currently in progress (the app's "ongoing sessions" screen, also
-refreshed on pull-to-refresh and when a push notification arrives). Response schema: **to be captured**. The app
-keys live data by `evseId`, so each ongoing session presumably carries one.
+refreshed on pull-to-refresh and when a push notification arrives). **Verified** on a real public-station charge: the
+response is a bare array whose items have the same shape as a charging-history entry (`sessionId`, `evseId`,
+`invoiceNo`, `pricingDetails`, `operator`, `protocol`, …). It is `[]` when nothing is charging.
+
+Observed lifecycle of one item:
+
+1. Right after the session is created: `isChargingStarted: false`, `amount: 0`, `notificationDetails` empty.
+2. When energy starts flowing: `isChargingStarted: true` and `notificationDetails.chargingStart` is set.
+3. While charging, only `updatedAt` changes: `amount` stays `0` and `timeDetails`, `ocpiCostBreakdown` and
+   `reconciled_data` stay `null`. Energy and cost are not in this endpoint — use the socket events for live energy.
+4. When the session ends the item disappears from the list and appears in the charge history with the final
+   energy, cost and `isPaid` / `isStop` set. The last socket energy (23.687 kWh) matched the history value
+   (23.707 kWh) to within the last interval.
+
+The tariff is in `pricingDetails` (`costKwh`, `Price`, `PreAuthHoldAmount` — the amount held as pre-authorisation —
+and `parkingPricing`).
 
 Session lifecycle states seen in the client: `SESSION_STARTED`, `SESSION_STOPPED`, `SESSION_PAID`, `SESSION_FAILED`.
 
@@ -249,20 +264,26 @@ Flow:
 4. On `connect_error` with message `Authentication error`, the client reconnects with the latest stored access
    token. When the token is refreshed over HTTP, the socket is disconnected and reopened with the new token.
 
-`chargingSessionProgress` payload (field names read by the live session UI; they follow the Hubject OICP
-`ChargingNotification` progress model, so `EvseID` and the other fields are PascalCase):
+`chargingSessionProgress` payload — **verified** on a real charge. It follows the Hubject OICP charging-notification
+model (PascalCase) and carries both the session and the EVSE:
 
-| Field | Meaning (UI label) |
+| Field | Observed value |
 |---|---|
-| `evseId` / `EvseID` | EVSE the session is running on (required; events without it are dropped) |
-| `SessionStart`, `ChargingStart` | Session / charging start timestamps |
-| `Time` | Timestamp of the measurement |
-| `Power`, `MaxPower` | Current and maximum power (kW) |
-| `Current`, `MaxCurrent` | Current and maximum current (A) |
-| `EnergyImport`, `EnergyExport` | Energy imported / exported (kWh) |
-| `ConsumedEnergyProgress` | Energy delivered so far (kWh) |
-| `ParkingTime`, `ReservationTime` | Parking and reservation time |
-| `Timeline` | Series of past measurements (used for a sparkline) |
+| `Type` | `"Progress"` |
+| `SessionID`, `CPOPartnerSessionID` | Session ids (`SessionID` equals the ongoing session's `sessionId`); `EMPPartnerSessionID` is `null` |
+| `OperatorID`, `EvseID` / `evseId` | Operator and EVSE of the session |
+| `ChargingStart` | ISO timestamp charging began (`SessionStart` was `null`) |
+| `EventOccurred` | ISO timestamp of this event (there is no `Time`) |
+| `ConsumedEnergyProgress` | Energy delivered so far, kWh (cumulative) |
+| `MeterValueStart` | Meter reading at the start, kWh |
+| `Identification.RemoteIdentification` | Identifier used to start the session (personal: do not log) |
+| `Timeline[]` | One point per event so far: `{ timestamp, value, current, power, maxPower, minPower, maxCurrent, minCurrent, stateOfCharge, time, parkingTime, reservationTime, energyExport, energyImport }`; `value` is the consumed energy, the others were `null` |
+| `ChargingDuration`, `MeterValueInBetween`, `PartnerProductID`, `Protocol` | `null`, `null`, product label, `HUBJECT` |
+
+Cadence on the observed station: one event about every 5 minutes (8 events in ~37 minutes, 2.5 → 23.7 kWh). Power
+and current were **not** reported (all `null`), so derive power from consecutive `ConsumedEnergyProgress` values. Some
+stations may report them in `Power` / `Current` or in the timeline. The socket also pushes `totalUnreadChatsCount`
+after `register`, which can be ignored.
 
 The app adds a local `receivedAt` timestamp and keeps only the latest event per `evseId`. Events are pushed when the
 charge point operator sends progress notifications through Hubject. Some stations may never send them; for that case
@@ -370,8 +391,7 @@ where `value` is `{ whitelisted: {status, userIds[]}, blacklisted: {status, user
 `Show_Email_2FA`. Not needed to read sessions; kept for reference.
 
 > **Verified against the real backend:** `ChargingSession` (history item), the receipt PDF payload and the `Evse` detail
-> (`GET /api/hubject/{evseId}` → `{ "result": { … } }`). `OngoingSession` is still inferred (not yet confirmed
-> against a running session). `ChargingSession` nests the applied tariff in `pricingDetails`, the billed station in
+> (`GET /api/hubject/{evseId}` → `{ "result": { … } }`). `OngoingSession` and the socket progress event were verified later on a running session. `ChargingSession` nests the applied tariff in `pricingDetails`, the billed station in
 > `chargingStation` (same `EvseData` shape as the EVSE detail) and its address in `evseDetails`.
 
 ### ChargingSession — history item (`GET /api/hubject/charge-history` → `data[]`)
@@ -420,9 +440,7 @@ The app pages with `limit = PAGE_SIZE` (probably 10) and stops when a page retur
 
 ### SessionProgress (socket `chargingSessionProgress`)
 
-See [Real-time session progress](#real-time-session-progress-socketio). Fields: `EvseID`/`evseId`, `SessionStart`,
-`ChargingStart`, `Time`, `Power`, `MaxPower`, `Current`, `MaxCurrent`, `EnergyImport`, `EnergyExport`,
-`ConsumedEnergyProgress`, `ParkingTime`, `ReservationTime`, `Timeline[]`.
+See [Real-time session progress](#real-time-session-progress-socketio) for the verified field table.
 
 ### Evse — charging point (nearby search **confirmed**; `GET /api/hubject/{evseId}` and `chargingStation` inferred)
 
@@ -477,19 +495,18 @@ User ─1───N─ ChargingSession ─N───1─ Evse ─N───1─ 
                  ├─1───1─ Receipt (PDF, by sessionId)
                  └─1───1─ Pricing snapshot (pricingDetails, tariff actually applied)
 
-User ─1───N─ OngoingSession ─1───0..1─ SessionProgress (live, joined by evseId)
+User ─1───N─ OngoingSession ─1───0..1─ SessionProgress (live, joined by sessionId)
                  │ evseId
                  └─N───1─ Evse
 ```
 
 Notes:
 
-- Live progress is keyed by **`evseId`, not `sessionId`**, so two ongoing sessions on the same EVSE cannot be told
-  apart from the progress event alone.
+- Live progress events carry both `SessionID` and `EvseID`; join them to the ongoing session by `sessionId`.
 - `ChargingSession.pricingDetails` is a snapshot of the tariff used for billing. `Evse.pricing` is the current
   tariff and may have changed since.
-- `sessionId` is presumably shared by an ongoing session and the history item it becomes when it ends
-  (to verify).
+- `sessionId` is shared by an ongoing session, its progress events and the history item it becomes when it ends
+  (the history entry of the observed charge had the same `invoiceNo`).
 
 ## Out of scope
 
@@ -499,11 +516,10 @@ They are deliberately not documented here (see the [scope](../README.md#scope)).
 
 ## Open questions
 
-1. Confirm the `ChargingSession`, `OngoingSession`, receipt and `Evse` payloads with a real charging session.
 2. Check whether the backend requires `x-device-id` / `req-scope`, or if it validates the device id format.
 3. Access token lifetime (the refresh token is not rotated).
 4. Two-factor login (email OTP and TOTP): the verification endpoint and body are not identified yet.
-5. A real `chargingSessionProgress` event: types, units, how often events arrive.
+5. Whether other stations report `Power` / `Current` in progress events (the observed one did not).
 6. Whether a socket client must emit anything besides `register` (e.g. subscribe to a session).
 7. Accounts linked to Google/Apple sign-in are refused by `/api/signIn-enc` even after setting a password
    (`400 "User is already register with social platform"`), although the app accepts the same credentials.
