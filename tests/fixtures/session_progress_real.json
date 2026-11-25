@@ -1,0 +1,35 @@
+{
+  "Type": "Progress",
+  "SessionID": "00000000-0000-4000-8000-0000000000aa",
+  "OperatorID": "IT*TST",
+  "CPOPartnerSessionID": "00000000-0000-4000-8000-0000000000bb",
+  "EMPPartnerSessionID": null,
+  "EvseID": "IT*TST*E0001*1",
+  "ChargingStart": "2026-01-20T08:00:30Z",
+  "EventOccurred": "2026-01-20T08:10:30Z",
+  "ChargingDuration": null,
+  "ConsumedEnergyProgress": 5.3,
+  "Identification": {
+    "RemoteIdentification": "000000000000"
+  },
+  "MeterValueStart": 1000.0,
+  "MeterValueInBetween": null,
+  "PartnerProductID": "AC",
+  "SessionStart": null,
+  "Protocol": "HUBJECT",
+  "Timeline": [
+    {
+      "timestamp": "2026-01-20T08:05:30Z",
+      "value": 2.5,
+      "current": null,
+      "power": null
+    },
+    {
+      "timestamp": "2026-01-20T08:10:30Z",
+      "value": 5.3,
+      "current": null,
+      "power": null
+    }
+  ],
+  "evseId": "IT*TST*E0001*1"
+}

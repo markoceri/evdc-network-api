@@ -128,6 +128,14 @@ def test_ongoing_session() -> None:
     assert session.evse_id == "IT*TST*E0001*1"
     assert session.is_paid is False
     assert session.created_at == datetime(2026, 1, 20, 8, tzinfo=UTC)
+    assert session.is_charging_started is True
+    assert session.is_failed is False
+    assert session.invoice_no == "1000000001"
+    assert session.operator == "IT*TST"
+    assert session.charging_start == datetime(2026, 1, 20, 8, 0, 30, tzinfo=UTC)
+    assert session.cost_per_kwh == pytest.approx(0.5)
+    assert session.pre_auth_amount == pytest.approx(50)
+    assert session.amount == 0
 
 
 def test_evse() -> None:
@@ -147,6 +155,18 @@ def test_session_progress() -> None:
     assert progress.consumed_energy_kwh == pytest.approx(5.4)
     assert progress.time == datetime(2026, 1, 20, 8, 15, tzinfo=UTC)
     assert len(progress.timeline) == 1
+
+
+def test_session_progress_real_event() -> None:
+    progress = SessionProgress.from_dict(load_fixture("session_progress_real"))
+    assert progress.session_id == "00000000-0000-4000-8000-0000000000aa"
+    assert progress.evse_id == "IT*TST*E0001*1"
+    assert progress.event_type == "Progress"
+    assert progress.consumed_energy_kwh == pytest.approx(5.3)
+    assert progress.meter_value_start_kwh == pytest.approx(1000.0)
+    assert progress.time == datetime(2026, 1, 20, 8, 10, 30, tzinfo=UTC)
+    assert progress.power_kw is None
+    assert len(progress.timeline) == 2
 
 
 def test_session_progress_accepts_camel_case_evse_id_and_epoch_time() -> None:

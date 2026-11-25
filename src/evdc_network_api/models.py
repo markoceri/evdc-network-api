@@ -589,27 +589,51 @@ class Receipt:
 
 @dataclass(slots=True)
 class OngoingSession:
-    """A session in progress (``/api/hubject/ongoing-sessionsV2``)."""
+    """A session in progress (``/api/hubject/ongoing-sessionsV2``, verified on a real charge).
+
+    The item has the same shape as a charging-history entry. ``amount`` stays 0 while charging: the cost is only
+    settled when the session ends. ``is_charging_started`` turns true once energy flows, and ``charging_start`` is
+    then taken from ``notificationDetails``. ``cost_per_kwh`` and ``pre_auth_amount`` come from the applied tariff.
+    """
 
     session_id: str | None
     evse_id: str | None = None
     amount: float | None = None
     currency: str | None = None
     created_at: datetime | None = None
+    updated_at: datetime | None = None
     is_paid: bool | None = None
     is_stop: bool | None = None
+    is_charging_started: bool | None = None
+    is_failed: bool | None = None
+    invoice_no: str | None = None
+    operator: str | None = None
+    protocol: str | None = None
+    charging_start: datetime | None = None
+    cost_per_kwh: float | None = None
+    pre_auth_amount: float | None = None
     raw: dict[str, Any] = field(default_factory=dict, repr=False)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> OngoingSession:
+        pricing = _dict(data.get("pricingDetails"))
         return cls(
             session_id=_str(data.get("sessionId")),
             evse_id=_str(data.get("evseId") or data.get("EvseID")),
             amount=_float(data.get("amount")),
             currency=_str(data.get("currency")),
             created_at=_datetime(data.get("createdAt")),
+            updated_at=_datetime(data.get("updatedAt")),
             is_paid=_bool(data.get("isPaid")),
             is_stop=_bool(data.get("isStop")),
+            is_charging_started=_bool(data.get("isChargingStarted")),
+            is_failed=_bool(data.get("isSessionFailed")),
+            invoice_no=_str(data.get("invoiceNo")),
+            operator=_str(data.get("operator")),
+            protocol=_str(data.get("protocol")),
+            charging_start=_datetime(_dict(data.get("notificationDetails")).get("chargingStart")),
+            cost_per_kwh=_float(pricing.get("costKwh")),
+            pre_auth_amount=_float(pricing.get("PreAuthHoldAmount")),
             raw=data,
         )
 
@@ -666,11 +690,19 @@ class ConnectedSession:
 class SessionProgress:
     """A live progress update pushed on the socket (``chargingSessionProgress``).
 
-    Keyed by ``evse_id``: match it to :class:`OngoingSession` through the EVSE, not the session id.
-    Units follow the app's labels (kW, A, kWh) and are not yet confirmed on real events.
+    Verified on a real charge (Hubject-style PascalCase payload): the event carries both ``SessionID`` and the EVSE,
+    so it can be matched to an :class:`OngoingSession` by ``session_id``. ``consumed_energy_kwh`` is the energy
+    delivered so far and ``meter_value_start_kwh`` the meter reading when charging began. The observed station sent
+    an event about every 5 minutes with no power or current (those are ``None``); each ``timeline`` entry is a
+    ``{"timestamp", "value", ...}`` point of the consumed energy. The power/current fields are kept for stations
+    that do report them.
     """
 
     evse_id: str | None
+    session_id: str | None = None
+    operator_id: str | None = None
+    event_type: str | None = None
+    meter_value_start_kwh: float | None = None
     time: datetime | None = None
     session_start: datetime | None = None
     charging_start: datetime | None = None
@@ -691,7 +723,11 @@ class SessionProgress:
         timeline = data.get("Timeline")
         return cls(
             evse_id=_str(data.get("evseId") or data.get("EvseID")),
-            time=_datetime(data.get("Time")),
+            session_id=_str(data.get("SessionID")),
+            operator_id=_str(data.get("OperatorID")),
+            event_type=_str(data.get("Type")),
+            meter_value_start_kwh=_float(data.get("MeterValueStart")),
+            time=_datetime(data.get("Time") or data.get("EventOccurred")),
             session_start=_datetime(data.get("SessionStart")),
             charging_start=_datetime(data.get("ChargingStart")),
             power_kw=_float(data.get("Power")),

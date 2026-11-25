@@ -4,8 +4,8 @@ Requires the ``live`` extra: ``pip install "evdc-network-api[live]"``.
 
 The backend pushes ``chargingSessionProgress`` events while a session runs, when the charge point operator sends
 progress notifications through Hubject. Some stations never do: poll
-:meth:`EvdcApiClient.get_ongoing_sessions` as a fallback. The event format is reconstructed from the app and not yet
-confirmed on a real session.
+:meth:`EvdcApiClient.get_ongoing_sessions` as a fallback. The event format is verified on a real session: about
+one event every 5 minutes, with the consumed energy and no power.
 """
 
 from __future__ import annotations

@@ -2,10 +2,26 @@
   {
     "sessionId": "00000000-0000-4000-8000-0000000000aa",
     "evseId": "IT*TST*E0001*1",
-    "amount": 50,
+    "amount": 0,
     "currency": "EUR",
     "createdAt": "2026-01-20T08:00:00.000Z",
     "isPaid": false,
-    "isStop": false
+    "isStop": false,
+    "isChargingStarted": true,
+    "isSessionFailed": false,
+    "invoiceNo": 1000000001,
+    "operator": "IT*TST",
+    "protocol": "HUBJECT",
+    "updatedAt": "2026-01-20T08:05:00.000Z",
+    "pricingDetails": {
+      "Unit": "KWH",
+      "Price": 0.5,
+      "costKwh": 0.5,
+      "Currency": "EUR",
+      "PreAuthHoldAmount": 50
+    },
+    "notificationDetails": {
+      "chargingStart": "2026-01-20T08:00:30Z"
+    }
   }
 ]
