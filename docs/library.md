@@ -162,6 +162,7 @@ tracking.** For a money-paid session the two are equal; `token_conversion_rate` 
 |---|---|---|
 | `get_evse(evse_id: str)` | `Evse` | One charging point by EVSE id (e.g. `IT*ABC*E123*1`). |
 | `get_favourite_stations()` | `list[Evse]` | The account's saved charging points, with live status and prices. |
+| `get_frequent_chargers(limit=None)` | `list[FrequentCharger]` | The stations the account charged at most often, with the session count and last use (app 2.2 backend). |
 | `get_nearby_stations(latitude, longitude, page=1, page_size=10)` | `list[Evse]` | One page of charging points around a point, nearest first. `page_size` is 1–100. Raises `ValueError` on invalid coordinates or paging values. |
 | `find_stations_near(latitude, longitude, *, radius_m=2000, max_results=None)` | `list[Evse]` | Charging points within `radius_m` metres, nearest first. The backend has no radius, so pages are read until the first result beyond it. Keep the radius small: it is what bounds the number of requests. |
 
@@ -174,6 +175,7 @@ Each `Evse` is one **connector**: a station with two sockets appears twice. `dis
 | `get_wallets()` | `list[Wallet]` | Balances, e.g. a EUR wallet and the EVDC Token wallet. |
 | `get_wallet_transactions(page=1, limit=10, *, currency=None, is_token=None)` | `WalletHistoryPage` | One page of movements, newest first. `currency` (e.g. `"EUR"`) and `is_token` filter the list. |
 | `iter_wallet_transactions(limit=10, max_pages=None, *, currency=None, is_token=None)` | `Iterator[WalletTransaction]` | The whole wallet history. |
+| `export_wallet_history()` | `Receipt` | The wallet history as a PDF (`content` holds the bytes). |
 
 `WalletTransaction.session_id` links a payment to the charging session it settled.
 
@@ -261,7 +263,11 @@ Datetimes are timezone-aware UTC.
 
 ### `Receipt`
 
-`filename: str | None`, `content: bytes` (the PDF; hidden from `repr()`).
+`filename: str | None`, `content: bytes` (the PDF; hidden from `repr()`). Also returned by `export_wallet_history()`.
+
+### `FrequentCharger`
+
+`evse_id`, `count`, `last_used_at`, `evse` (an `Evse` without live price or status), `raw`.
 
 ### `Evse`
 

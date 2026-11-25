@@ -92,6 +92,8 @@ with EvdcApiClient(email="you@example.com", password="...") as client:
 
     for evse in client.get_favourite_stations():  # your saved stations, with live status and prices
         print(evse.operator_name, evse.status, evse.max_power_kw)
+    for charger in client.get_frequent_chargers(limit=5):  # where you charge most
+        print(charger.evse_id, charger.count, charger.last_used_at)
     print(client.count_unread_notifications(), "unread notifications")
 ```
 

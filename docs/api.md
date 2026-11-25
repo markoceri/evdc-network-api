@@ -6,7 +6,7 @@ Notes on the interface between the official EVDC Android app and its backend, co
 > Status: request shapes come from the decompiled client. Login, token refresh, profile, system configuration, the
 > history / ongoing-session envelopes, the history items, the receipt and the EVSE detail are **verified** against the
 > real backend. The ongoing-session item and the socket progress event are verified on a real charge too. Everything marked
-> *inferred* is still to be confirmed.
+> *inferred* is still to be confirmed. See [Changes in app 2.2](#changes-in-app-22-checked-2026-11-25).
 
 ## Source
 
@@ -232,6 +232,37 @@ The account's balances and the movements that paid for charging, in EUR and in t
 
 The client exposes `get_wallets()`, `get_wallet_transactions()` and `iter_wallet_transactions()`. Top-ups, transfers
 and setting the primary wallet are write operations and are out of scope.
+
+Undocumented fields seen on real responses (they are kept in `raw`, not modelled):
+
+- **Wallet** — `chargeCurrency`, `blockchain` (`null` for non-token wallets) and `fee` (`percentage`, `fix`,
+  `international`, `country`).
+- **Transaction** — `fromCurrency` (e.g. `EVDC Token` when a payment converted tokens), `baseEUR`, `remainingEUR`,
+  `originalBalance`, `remainingMigrationCredit`, `isFraud`, `note` and `transactionId` (often `null`).
+- **Export** — `GET /api/wallet/history/export-pdf` (app 2.2) returns `{ "result": { "filename", "base64" } }`: the
+  account's wallet history as a PDF (verified, `%PDF-`, ~100 KB for a small account; no parameters needed). The
+  client exposes `export_wallet_history()`, which returns the same `Receipt` shape as `get_receipt()`.
+
+## Changes in app 2.2 (checked 2026-11-25)
+
+The 2.2 APK (version code 88) was compared with 1.1.10 (82). The bundle is Hermes bytecode, format 96 → 98.
+
+- **Compatible:** every endpoint the client uses is still present and answers identically with `x-app-version` set to
+  `1.1.10` or `2.2` (same status, same fields for profile, history, ongoing, wallets, transactions, notifications,
+  favourites and connected sessions). `DEFAULT_APP_VERSION` was not changed.
+- **New in the bundle:** `banners`, `faq`, `refund-requests` (+ `create`, `cancel`), `route-planner/*`,
+  `user-vehicles` (+ `image`), `wallet/convert`, `wallet/history/export-pdf`, `hubject/session/top-frequent-chargers`
+  and `signUp/v2`.
+- **Removed:** `rfid/orders/get`, `supportMail-v2`, `media/upload`, `wallet/add/balance/usd` (+ `confirm`),
+  `wallet/add/token` and the old `signUp-enc`.
+- **Read-only endpoints verified on the real backend:**
+  - `GET /api/hubject/session/top-frequent-chargers?limit=` → `{ "data": [ { "evseId", "count", "lastUsedAt",
+    "evseData": { "EvseData": { … } } } ] }`: the stations the user charged at most (`count` sessions, last use). The
+    `evseData` is the usual `EvseData` record without live price or status. Exposed as `get_frequent_chargers()`.
+  - `GET /api/user-vehicles` → `{ "data": [] }` and `GET /api/refund-requests` → `{ "data": [], "total", "page",
+    "limit", "totalPages" }`. Both were empty on the test account, so the item shapes are **not verified** and they
+    are not modelled. Creating, updating or cancelling vehicles and refund requests, the route planner and wallet
+    conversion are out of scope.
 
 ## Favourite stations and notifications (read-only) — **verified**
 

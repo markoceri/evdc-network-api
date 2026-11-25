@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- `get_frequent_chargers()` → `list[FrequentCharger]` (the stations charged at most often) and
+  `export_wallet_history()` → `Receipt` (the wallet history as a PDF). Both are read-only endpoints new in app 2.2,
+  verified on the real backend. The client was checked against app 2.2: all existing calls are unchanged.
 - `EvdcApiClient`, a synchronous client for the EVDC backend (`https://api-v2.evdccharge.co/`), and
   `AsyncEvdcApiClient`, an `asyncio.to_thread()` wrapper around it.
 - Login with email and password through `/api/signIn-enc`. The password is encrypted with RSA-OAEP (SHA-256) using
