@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import logging
+from datetime import UTC, datetime
 
 import pytest
 
@@ -498,6 +499,8 @@ WALLETS = "api/wallet/user/wallets"
 WALLET_HISTORY = "api/wallet/history"
 FAVOURITES = "api/favourite/stations"
 NOTIFICATIONS = "api/notification/"
+FREQUENT_CHARGERS = "api/hubject/session/top-frequent-chargers"
+WALLET_EXPORT_PDF = "api/wallet/history/export-pdf"
 
 
 def test_get_favourite_stations(fake_session: FakeSession) -> None:
@@ -578,6 +581,43 @@ def test_iter_wallet_transactions_stops_at_last_page(fake_session: FakeSession) 
 
     assert len(txns) == 2
     assert len(fake_session.calls) == 1
+
+
+def test_get_frequent_chargers(fake_session: FakeSession) -> None:
+    fake_session.add("GET", FREQUENT_CHARGERS, _ok(load_fixture("frequent_chargers")))
+
+    chargers = _client(fake_session, access_token="token").get_frequent_chargers(limit=5)
+
+    assert fake_session.calls[0].params == {"limit": 5}
+    assert len(chargers) == 1
+    assert chargers[0].evse_id == "IT*TST*E0001*1"
+    assert chargers[0].count == 3
+    assert chargers[0].last_used_at == datetime(2026, 1, 20, 8, tzinfo=UTC)
+    assert chargers[0].evse is not None
+    assert chargers[0].evse.operator_name == "Test Charging Srl"
+
+
+def test_get_frequent_chargers_without_limit_sends_no_params(fake_session: FakeSession) -> None:
+    fake_session.add("GET", FREQUENT_CHARGERS, _ok({"data": []}))
+
+    assert _client(fake_session, access_token="token").get_frequent_chargers() == []
+    assert fake_session.calls[0].params is None
+
+
+def test_export_wallet_history(fake_session: FakeSession) -> None:
+    fake_session.add("GET", WALLET_EXPORT_PDF, _ok({"result": load_fixture("receipt")}))
+
+    document = _client(fake_session, access_token="token").export_wallet_history()
+
+    assert document.content.startswith(b"%PDF-")
+    assert document.filename == "receipt-INV-TEST-0001.pdf"
+
+
+def test_export_wallet_history_without_content(fake_session: FakeSession) -> None:
+    fake_session.add("GET", WALLET_EXPORT_PDF, _ok({"result": {}}))
+
+    with pytest.raises(EvdcApiError, match="base64"):
+        _client(fake_session, access_token="token").export_wallet_history()
 
 
 def test_get_receipt(fake_session: FakeSession) -> None:

@@ -27,6 +27,7 @@ from .const import (
     PATH_CHARGE_HISTORY,
     PATH_EVSE,
     PATH_FAVOURITE_STATIONS,
+    PATH_FREQUENT_CHARGERS,
     PATH_NEARBY,
     PATH_NOTIFICATIONS,
     PATH_ONGOING_SESSIONS,
@@ -40,6 +41,7 @@ from .const import (
     PATH_TOTP_RECOVERY_LOGIN,
     PATH_USER_SESSIONS,
     PATH_VERIFY_OTP,
+    PATH_WALLET_EXPORT_PDF,
     PATH_WALLET_HISTORY,
     PATH_WALLETS,
     REQ_SCOPE,
@@ -53,6 +55,7 @@ from .models import (
     ChargingSession,
     ConnectedSession,
     Evse,
+    FrequentCharger,
     Notification,
     NotificationPage,
     OngoingSession,
@@ -495,6 +498,24 @@ class EvdcApiClient:
         The backend has no unread-count endpoint, so this pages through the notifications and counts the unread ones.
         """
         return sum(1 for n in self.iter_notifications(limit=50, success=success) if n.read is False)
+
+    def get_frequent_chargers(self, limit: int | None = None) -> list[FrequentCharger]:
+        """Fetch the stations the account charged at most often, with the session count and the last use.
+
+        Needs app 2.2 or later on the backend side; ``limit`` caps the number of stations when given.
+        """
+        params = {"limit": limit} if limit is not None else None
+        body = self._authed("GET", PATH_FREQUENT_CHARGERS, params=params)
+        return [FrequentCharger.from_dict(item) for item in _items(body)]
+
+    def export_wallet_history(self) -> Receipt:
+        """Download the account's wallet history as a PDF document (``content`` holds the PDF bytes)."""
+        body = _dict(self._authed("GET", PATH_WALLET_EXPORT_PDF))
+        payload = body if "base64" in body else _dict(body.get("result") or body.get("data"))
+        try:
+            return Receipt.from_dict(payload)
+        except ValueError as exc:
+            raise EvdcApiError(str(exc)) from exc
 
     def get_wallets(self) -> list[Wallet]:
         """Fetch the account's wallets with their balances (e.g. a EUR wallet and an EVDC-token wallet)."""

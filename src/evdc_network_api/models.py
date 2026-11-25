@@ -588,6 +588,33 @@ class Receipt:
 
 
 @dataclass(slots=True)
+class FrequentCharger:
+    """A station the user charges at often (``/api/hubject/session/top-frequent-chargers``, app 2.2).
+
+    ``count`` is the number of sessions there and ``last_used_at`` the most recent one. ``evse`` is the station
+    detail (without live price or status), when the backend sends it.
+    """
+
+    evse_id: str | None
+    count: int | None = None
+    last_used_at: datetime | None = None
+    evse: Evse | None = None
+    raw: dict[str, Any] = field(default_factory=dict, repr=False)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> FrequentCharger:
+        count = data.get("count")
+        station = data.get("evseData")
+        return cls(
+            evse_id=_str(data.get("evseId")),
+            count=count if isinstance(count, int) and not isinstance(count, bool) else None,
+            last_used_at=_datetime(data.get("lastUsedAt")),
+            evse=Evse.from_dict(station) if isinstance(station, dict) else None,
+            raw=data,
+        )
+
+
+@dataclass(slots=True)
 class OngoingSession:
     """A session in progress (``/api/hubject/ongoing-sessionsV2``, verified on a real charge).
 

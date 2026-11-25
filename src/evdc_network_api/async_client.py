@@ -18,6 +18,7 @@ if TYPE_CHECKING:
         ChargingSession,
         ConnectedSession,
         Evse,
+        FrequentCharger,
         NotificationPage,
         OngoingSession,
         Receipt,
@@ -106,6 +107,12 @@ class AsyncEvdcApiClient:
 
     async def get_favourite_stations(self) -> list[Evse]:
         return await asyncio.to_thread(self._client.get_favourite_stations)
+
+    async def get_frequent_chargers(self, limit: int | None = None) -> list[FrequentCharger]:
+        return await asyncio.to_thread(self._client.get_frequent_chargers, limit)
+
+    async def export_wallet_history(self) -> Receipt:
+        return await asyncio.to_thread(self._client.export_wallet_history)
 
     async def get_notifications(
         self, page: int = 1, limit: int = DEFAULT_PAGE_SIZE, *, success: bool = True

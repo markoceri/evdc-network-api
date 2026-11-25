@@ -50,9 +50,12 @@ PATH_USER_SESSIONS = "api/user-sessions"  # noqa: S105 - a URL path, not a secre
 # Wallet (read-only): the user's balances and their transaction history.
 PATH_WALLETS = "api/wallet/user/wallets"
 PATH_WALLET_HISTORY = "api/wallet/history"
+PATH_WALLET_EXPORT_PDF = "api/wallet/history/export-pdf"
 # Favourite stations and notifications (read-only).
 PATH_FAVOURITE_STATIONS = "api/favourite/stations"
 PATH_NOTIFICATIONS = "api/notification/"
+# The stations the user charged at most often (app 2.2).
+PATH_FREQUENT_CHARGERS = "api/hubject/session/top-frequent-chargers"
 # Longitude first (GeoJSON order): verified on the real backend, the reverse order returns far-away results.
 PATH_NEARBY = "api/hubject/nearby/{longitude}/{latitude}"
 
