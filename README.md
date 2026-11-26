@@ -62,12 +62,12 @@ API.
 
 ## Installation
 
-Not yet published on PyPI. From a clone:
-
 ```bash
-pip install -e .            # client
-pip install -e ".[live]"    # plus live session progress (python-socketio)
+pip install evdc-network-api            # client
+pip install "evdc-network-api[live]"    # plus live session progress (python-socketio)
 ```
+
+From a clone, for development: `pip install -e ".[dev]"`.
 
 ## Usage
 

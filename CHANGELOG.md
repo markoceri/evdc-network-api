@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-26
+
+First release.
+
 ### Added
 - `get_frequent_chargers()` → `list[FrequentCharger]` (the stations charged at most often) and
   `export_wallet_history()` → `Receipt` (the wallet history as a PDF). Both are read-only endpoints new in app 2.2,
